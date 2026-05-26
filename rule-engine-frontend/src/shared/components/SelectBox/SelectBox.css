@@ -1,0 +1,73 @@
+.rule-engine-select-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.rule-engine-select-wrapper.full-width {
+  width: 100%;
+}
+
+.select-label {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.select-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.rule-engine-select {
+  appearance: none;
+  background-color: var(--color-surface-secondary);
+  border: 1px solid var(--color-border-subtle);
+  color: var(--color-text-primary);
+  border-radius: 8px;
+  padding: 0.625rem 2.5rem 0.625rem 1rem;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  outline: none;
+  width: 100%;
+  cursor: pointer;
+}
+
+.rule-engine-select:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.rule-engine-select:focus {
+  border-color: var(--color-neon-purple);
+  box-shadow: var(--shadow-glow-sm);
+  background-color: var(--color-space-900);
+}
+
+.rule-engine-select.has-error {
+  border-color: #ef4444;
+}
+
+.select-arrow {
+  position: absolute;
+  right: 1rem;
+  pointer-events: none;
+  color: var(--color-text-muted);
+  display: flex;
+}
+
+.rule-engine-select:focus + .select-arrow {
+  color: var(--color-neon-purple);
+}
+
+.select-error {
+  font-size: 0.75rem;
+  color: #ef4444;
+  margin-top: 0.25rem;
+}
+
+.select-option {
+  background-color: var(--color-surface-elevated);
+  color: var(--color-text-primary);
+}

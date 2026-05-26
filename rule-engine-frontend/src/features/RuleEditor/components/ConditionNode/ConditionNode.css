@@ -1,0 +1,58 @@
+.node-condition {
+  background-color: rgba(15, 15, 35, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 8px;
+  width: 250px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.node-condition.selected {
+  border-color: var(--color-neon-blue);
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+}
+
+.node-condition .node-header {
+  background-color: rgba(0, 212, 255, 0.1);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-neon-blue);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.node-condition .node-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.node-condition .rule-engine-input, 
+.node-condition .rule-engine-select {
+  font-size: 0.75rem;
+  padding: 6px 10px;
+}
+
+.handle-input {
+  width: 12px !important;
+  height: 12px !important;
+  background-color: var(--color-surface-secondary) !important;
+  border: 2px solid var(--color-text-muted) !important;
+  top: -6px !important;
+}
+
+.handle-output {
+  width: 12px !important;
+  height: 12px !important;
+  background-color: var(--color-neon-blue) !important;
+  border: 2px solid var(--color-space-900) !important;
+  bottom: -6px !important;
+}
