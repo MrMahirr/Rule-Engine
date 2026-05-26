@@ -1,3 +1,5 @@
+import { NodePalette } from '../features/RuleEditor/components/NodePalette/NodePalette';
+import { RuleCanvas } from '../features/RuleEditor/components/RuleCanvas/RuleCanvas';
 import './App.css';
 
 export default function App() {
@@ -8,10 +10,8 @@ export default function App() {
         <p className="app-subtitle">Feature-Driven Architecture</p>
       </header>
       <main className="app-main">
-        {/* Adım 3 ve 5'te Canvas ve List buralara eklenecek */}
-        <div className="placeholder-content">
-          <p>Rule Canvas ve Liste Alanı Hazırlanıyor...</p>
-        </div>
+        <NodePalette />
+        <RuleCanvas />
       </main>
     </div>
   );

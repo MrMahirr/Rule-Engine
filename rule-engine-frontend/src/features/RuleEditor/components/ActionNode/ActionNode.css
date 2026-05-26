@@ -1,0 +1,33 @@
+.node-action {
+  background-color: rgba(15, 15, 35, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 8px;
+  width: 220px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.node-action.selected {
+  border-color: rgba(34, 211, 238, 1);
+  box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
+}
+
+.node-action .node-header {
+  background-color: rgba(34, 211, 238, 0.1);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-neon-cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.node-action .node-body {
+  padding: 12px;
+}
