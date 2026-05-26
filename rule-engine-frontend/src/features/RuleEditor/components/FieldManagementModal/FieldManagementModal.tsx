@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Modal, Input, Button, SelectBox } from '../../../../shared/components';
+import { Modal, Input, Button, SelectBox, useToast, Skeleton } from '../../../../shared/components';
 import { useFieldsQuery, useCreateFieldMutation, useDeleteFieldMutation } from '../../services/useFieldQueries';
+import { useConfirm } from '../../../../shared/hooks';
 import './FieldManagementModal.css';
 
 interface Props {
@@ -12,6 +13,8 @@ export function FieldManagementModal({ isOpen, onClose }: Props) {
   const { data: fieldsData, isLoading } = useFieldsQuery();
   const createMutation = useCreateFieldMutation();
   const deleteMutation = useDeleteFieldMutation();
+  const { success } = useToast();
+  const { confirm } = useConfirm();
 
   const [fieldName, setFieldName] = useState('');
   const [fieldType, setFieldType] = useState('string');
@@ -30,14 +33,22 @@ export function FieldManagementModal({ isOpen, onClose }: Props) {
       });
       setFieldName('');
       setFieldDesc('');
+      success('Alan Eklendi', `'${fieldName.trim()}' havuza eklendi.`);
     } catch (error) {
       console.error('Field creation failed', error);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Bu alanı havuzdan silmek istediğinize emin misiniz?')) {
+  const handleDelete = async (id: string, name: string) => {
+    const isConfirmed = await confirm({
+      title: 'Alanı Sil',
+      message: `'${name}' alanını havuzdan silmek istediğinize emin misiniz? Bu işlem geri alınamaz.`,
+      confirmText: 'Evet, Sil',
+      isDestructive: true
+    });
+    if (isConfirmed) {
       await deleteMutation.mutateAsync(id);
+      success('Alan Silindi', `'${name}' havuzdan kaldırıldı.`);
     }
   };
 
@@ -80,7 +91,7 @@ export function FieldManagementModal({ isOpen, onClose }: Props) {
         <div className="field-list-section">
           <h4>Kayıtlı Alanlar</h4>
           {isLoading ? (
-            <div className="field-loading">Yükleniyor...</div>
+            <Skeleton height="50px" borderRadius="6px" count={3} />
           ) : fields.length === 0 ? (
             <div className="field-empty">Henüz hiç alan eklenmemiş.</div>
           ) : (
@@ -95,7 +106,7 @@ export function FieldManagementModal({ isOpen, onClose }: Props) {
                   <button 
                     type="button" 
                     className="field-delete-btn" 
-                    onClick={() => handleDelete(field.id)}
+                    onClick={() => handleDelete(field.id, field.name)}
                     disabled={deleteMutation.isPending}
                   >
                     Sil

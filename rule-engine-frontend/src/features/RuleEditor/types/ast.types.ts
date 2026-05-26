@@ -23,6 +23,7 @@ export interface ASTActionNode {
 export interface RulePayload {
   name: string;
   description: string;
+  isActive: boolean;
   ast: ASTNode | null;
   action: ASTActionNode | null;
 }

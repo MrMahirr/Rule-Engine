@@ -9,6 +9,7 @@ import {
 } from '@xyflow/react';
 import { RuleNodeType } from '../types/ruleNode.types';
 import { ASTNode, ASTActionNode, ASTConditionNode, ASTLogicNode } from '../types/ast.types';
+import { useHistory } from './useHistory';
 
 const initialNodes: Node[] = [];
 const initialEdges: Edge[] = [];
@@ -17,12 +18,18 @@ export function useRuleEngine() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
+  const { takeSnapshot, undo, redo, canUndo, canRedo } = useHistory(nodes, edges, setNodes as any, setEdges as any);
+
   const onConnect = useCallback(
-    (params: Connection | Edge) => setEdges((eds) => addEdge({ ...params, animated: true }, eds)),
-    [setEdges]
+    (params: Connection | Edge) => {
+      takeSnapshot();
+      setEdges((eds) => addEdge({ ...params, animated: true }, eds));
+    },
+    [setEdges, takeSnapshot]
   );
 
   const updateNodeData = useCallback((id: string, dataPatch: any) => {
+    takeSnapshot();
     setNodes((nds) =>
       nds.map((node) => {
         if (node.id === id) {
@@ -97,6 +104,11 @@ export function useRuleEngine() {
     onEdgesChange,
     onConnect,
     updateNodeData,
-    toAST
+    toAST,
+    takeSnapshot,
+    undo,
+    redo,
+    canUndo,
+    canRedo
   };
 }

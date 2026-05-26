@@ -15,8 +15,9 @@ import { ActionNode } from '../ActionNode/ActionNode';
 import { useRuleEngine } from '../../hooks/useRuleEngine';
 import { useNodeDragAndDrop } from '../../hooks/useNodeDragAndDrop';
 import { useRuleValidation } from '../../hooks/useRuleValidation';
+import { useRuleImportExport } from '../../hooks/useRuleImportExport';
 import { useSaveRuleMutation } from '../../services/useRuleQueries';
-import { Button, Modal, Input } from '../../../../shared/components';
+import { Button, Modal, Input, useToast } from '../../../../shared/components';
 import { FieldManagementModal } from '../FieldManagementModal/FieldManagementModal';
 import './RuleCanvas.css';
 
@@ -29,16 +30,36 @@ const nodeTypes = {
 function RuleCanvasInternal() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, setNodes, updateNodeData, toAST } = useRuleEngine();
-  const { onDragOver, onDrop } = useNodeDragAndDrop(setNodes, updateNodeData);
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, setNodes, setEdges, updateNodeData, toAST, takeSnapshot, undo, redo, canUndo, canRedo } = useRuleEngine();
+  const { onDragOver, onDrop } = useNodeDragAndDrop(setNodes, updateNodeData, takeSnapshot);
   const { validateRule } = useRuleValidation();
   const saveMutation = useSaveRuleMutation();
+  const { success, error } = useToast();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFieldModalOpen, setIsFieldModalOpen] = useState(false);
   const [ruleName, setRuleName] = useState('');
   const [ruleDesc, setRuleDesc] = useState('');
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { exportRule, importRule } = useRuleImportExport(setNodes, setEdges, setRuleName, setRuleDesc);
+
+  const handleExportClick = () => {
+    const { ast, action } = toAST();
+    exportRule({ ruleName, ruleDesc, nodes, edges, ast, action });
+  };
+
+  const handleImportChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      importRule(file);
+    }
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleSaveClick = () => {
     const { isValid, errors } = validateRule(nodes, edges);
@@ -56,22 +77,38 @@ function RuleCanvasInternal() {
       await saveMutation.mutateAsync({
         name: ruleName || 'İsimsiz Kural',
         description: ruleDesc,
+        isActive: true,
         ast,
         action
       });
       setIsModalOpen(false);
       setRuleName('');
       setRuleDesc('');
-    } catch (error) {
-      console.error('Save failed', error);
-      // handled by global interceptor ideally, or show local error
+      success('Kural Kaydedildi', 'Kural başarıyla veritabanına kaydedildi.');
+    } catch (err) {
+      console.error('Save failed', err);
+      error('Kayıt Başarısız', 'Kural kaydedilirken bir sorun oluştu.');
     }
   };
 
   return (
     <div className="rule-canvas-wrapper" ref={reactFlowWrapper}>
       <div className="canvas-toolbar">
-        <Button onClick={() => setIsFieldModalOpen(true)} variant="secondary" style={{ marginRight: '0.5rem' }}>Alanları Yönet</Button>
+        <Button onClick={() => setIsFieldModalOpen(true)} variant="secondary">Alanları Yönet</Button>
+        <div style={{ flex: 1 }}></div>
+        <div style={{ display: 'flex', gap: '0.5rem', marginRight: '1rem', borderRight: '1px solid var(--color-border-subtle)', paddingRight: '1rem' }}>
+          <Button onClick={undo} variant="ghost" disabled={!canUndo} title="Geri Al (Ctrl+Z)">Geri Al</Button>
+          <Button onClick={redo} variant="ghost" disabled={!canRedo} title="Yinele (Ctrl+Y)">Yinele</Button>
+        </div>
+        <input 
+          type="file" 
+          accept=".json" 
+          ref={fileInputRef} 
+          style={{ display: 'none' }} 
+          onChange={handleImportChange} 
+        />
+        <Button onClick={() => fileInputRef.current?.click()} variant="secondary">İçe Aktar</Button>
+        <Button onClick={handleExportClick} variant="secondary">Dışa Aktar</Button>
         <Button onClick={handleSaveClick} variant="primary">Kuralı Kaydet</Button>
       </div>
 

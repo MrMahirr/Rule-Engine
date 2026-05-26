@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useRuleListLogic } from '../../hooks/useRuleListLogic';
-import { Button, Input, Card } from '../../../../shared/components';
+import { Button, Input, Card, Switch, Skeleton } from '../../../../shared/components';
 import './RuleListPanel.css';
 
 export function RuleListPanel() {
   const { 
     rules, isLoading, isError, 
-    handleSearch, handleDelete, 
+    handleSearch, handleDelete, handleToggle, handleClone,
     selectedRuleId, setSelectedRuleId 
   } = useRuleListLogic();
   
@@ -33,7 +33,11 @@ export function RuleListPanel() {
       </div>
 
       <div className="rules-container">
-        {isLoading && <div className="panel-message loading"><span className="spinner"></span> Yükleniyor...</div>}
+        {isLoading && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1rem' }}>
+            <Skeleton height="80px" borderRadius="8px" count={3} />
+          </div>
+        )}
         {isError && <div className="panel-message error">Kurallar yüklenemedi.</div>}
         
         {!isLoading && !isError && rules.length === 0 && (
@@ -49,14 +53,30 @@ export function RuleListPanel() {
             onClick={() => setSelectedRuleId(rule.id)}
           >
             <div className="rule-item-content">
-              <h4>{rule.name}</h4>
-              <p>{rule.description}</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <h4 style={{ margin: 0, opacity: rule.isActive === false ? 0.5 : 1 }}>{rule.name}</h4>
+                {rule.isActive === false && <span style={{ fontSize: '10px', backgroundColor: '#ef4444', padding: '2px 4px', borderRadius: '4px' }}>Pasif</span>}
+              </div>
+              <p style={{ opacity: rule.isActive === false ? 0.5 : 1 }}>{rule.description}</p>
             </div>
-            <div className="rule-item-actions">
+            <div className="rule-item-actions" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.5rem' }}>
+              <div onClick={e => e.stopPropagation()} title="Aktif/Pasif Yap">
+                <Switch 
+                  checked={rule.isActive !== false} 
+                  onChange={() => handleToggle(rule.id, rule.isActive !== false)} 
+                />
+              </div>
+              <Button 
+                variant="secondary" 
+                size="sm" 
+                onClick={(e) => { e.stopPropagation(); handleClone(rule); }}
+              >
+                Kopyala
+              </Button>
               <Button 
                 variant="danger" 
                 size="sm" 
-                onClick={(e) => { e.stopPropagation(); handleDelete(rule.id); }}
+                onClick={(e) => { e.stopPropagation(); handleDelete(rule.id, rule.name); }}
               >
                 Sil
               </Button>

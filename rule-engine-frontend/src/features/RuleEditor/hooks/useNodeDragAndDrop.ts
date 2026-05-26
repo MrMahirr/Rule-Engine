@@ -6,8 +6,9 @@ let idCounter = 0;
 const getId = () => `node_${idCounter++}`;
 
 export function useNodeDragAndDrop(
-  setNodes: React.Dispatch<React.SetStateAction<Node[]>>, 
-  updateNodeData: (id: string, dataPatch: any) => void
+  setNodes: React.Dispatch<React.SetStateAction<Node[]>>,
+  updateNodeData: (id: string, data: any) => void,
+  takeSnapshot: () => void
 ) {
   const { screenToFlowPosition } = useReactFlow();
 
@@ -22,6 +23,8 @@ export function useNodeDragAndDrop(
 
       const type = event.dataTransfer.getData('application/reactflow') as RuleNodeType;
       if (!type) return;
+
+      takeSnapshot();
 
       const position = screenToFlowPosition({
         x: event.clientX,

@@ -2,6 +2,8 @@ import { ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ReactFlowProvider } from '@xyflow/react';
+import { ToastProvider } from '../../shared/components';
+import { ConfirmProvider } from '../../shared/hooks';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,9 +22,13 @@ interface AppProvidersProps {
 export default function AppProviders({ children }: AppProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
-      <ReactFlowProvider>
-        {children}
-      </ReactFlowProvider>
+      <ToastProvider>
+        <ConfirmProvider>
+          <ReactFlowProvider>
+            {children}
+          </ReactFlowProvider>
+        </ConfirmProvider>
+      </ToastProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

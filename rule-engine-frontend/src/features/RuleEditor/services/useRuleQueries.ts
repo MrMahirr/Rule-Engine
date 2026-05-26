@@ -61,6 +61,22 @@ export function useDeleteRuleMutation() {
   });
 }
 
+export function useToggleRuleMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
+      apiClient.request<ApiResponse<void>>({
+        endpoint: replaceParams(ApiEndpoint.TOGGLE_RULE, { id }),
+        method: HttpMethod.PATCH,
+        data: { isActive },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ruleKeys.lists() });
+    },
+  });
+}
+
 export function useEvaluateRuleMutation() {
   return useMutation({
     mutationFn: (payload: { ruleId: string; data: any }) =>
