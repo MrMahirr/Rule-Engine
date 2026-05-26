@@ -40,24 +40,24 @@ export function useRuleEngine() {
     );
   }, [setNodes]);
 
-  const toAST = useCallback((): { ast: ASTNode | null; action: ASTActionNode | null } => {
-    // 1. Find the Action Node (Root of execution)
-    const actionNode = nodes.find(n => n.type === RuleNodeType.ACTION);
-    if (!actionNode) {
-      return { ast: null, action: null };
+  const toAST = useCallback((): { ast: ASTNode | null; actions: ASTActionNode[] } => {
+    // 1. Find the Action Nodes
+    const actionNodes = nodes.filter(n => n.type === RuleNodeType.ACTION);
+    const actions: ASTActionNode[] = actionNodes.map(n => ({
+      type: 'ACTION',
+      actionType: n.data.actionType as ASTActionNode['actionType'],
+      params: (n.data.params as Record<string, string>) || {},
+    }));
+
+    if (actions.length === 0) {
+      return { ast: null, actions: [] };
     }
 
-    const actionData: ASTActionNode = {
-      type: 'ACTION',
-      actionType: actionNode.data.actionType as ASTActionNode['actionType'],
-      params: (actionNode.data.params as Record<string, string>) || {},
-    };
-
     // 2. Build the Condition/Logic Tree
-    // Find the node connected to the Action Node's target handle.
-    const edgeToAction = edges.find(e => e.target === actionNode.id);
+    // Find an edge connecting TO the first action node
+    const edgeToAction = edges.find(e => e.target === actionNodes[0].id);
     if (!edgeToAction) {
-      return { ast: null, action: actionData };
+      return { ast: null, actions };
     }
 
     const buildTree = (nodeId: string): ASTNode | null => {
@@ -92,7 +92,7 @@ export function useRuleEngine() {
     const rootConditionId = edgeToAction.source;
     const ast = buildTree(rootConditionId);
 
-    return { ast, action: actionData };
+    return { ast, actions };
   }, [nodes, edges]);
 
   return {

@@ -9,7 +9,7 @@ export interface RuleExportSchema {
     description: string;
   };
   ast: ASTNode | null;
-  action: ASTActionNode | null;
+  actions: ASTActionNode[];
   canvas: {
     nodes: Node[];
     edges: Edge[];

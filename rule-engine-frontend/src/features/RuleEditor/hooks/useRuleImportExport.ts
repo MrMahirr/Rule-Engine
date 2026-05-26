@@ -10,7 +10,7 @@ interface ExportParams {
   nodes: Node[];
   edges: Edge[];
   ast: ASTNode | null;
-  action: ASTActionNode | null;
+  actions: ASTActionNode[];
 }
 
 export function useRuleImportExport(
@@ -30,7 +30,7 @@ export function useRuleImportExport(
         description: params.ruleDesc || '',
       },
       ast: params.ast,
-      action: params.action,
+      actions: params.actions,
       canvas: {
         nodes: params.nodes,
         edges: params.edges,

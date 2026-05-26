@@ -52,9 +52,10 @@ export function useRuleListLogic() {
       await saveMutation.mutateAsync({
         name: `${rule.name} (Kopya)`,
         description: rule.description,
+        category: rule.category || 'Genel',
         isActive: false, // Kopyalanan kurallar varsayılan pasif başlasın
         ast: rule.ast,
-        action: rule.action
+        actions: rule.actions || []
       });
       success('Kopyalandı', 'Kuralın kopyası oluşturuldu.');
     } catch (err) {

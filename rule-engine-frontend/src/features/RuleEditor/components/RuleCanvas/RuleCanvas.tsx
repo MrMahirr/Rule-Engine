@@ -16,9 +16,12 @@ import { useRuleEngine } from '../../hooks/useRuleEngine';
 import { useNodeDragAndDrop } from '../../hooks/useNodeDragAndDrop';
 import { useRuleValidation } from '../../hooks/useRuleValidation';
 import { useRuleImportExport } from '../../hooks/useRuleImportExport';
+import { useAutoLayout } from '../../hooks/useAutoLayout';
+import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { useSaveRuleMutation } from '../../services/useRuleQueries';
 import { Button, Modal, Input, useToast } from '../../../../shared/components';
 import { FieldManagementModal } from '../FieldManagementModal/FieldManagementModal';
+import { RuleSimulator } from '../RuleSimulator/RuleSimulator';
 import './RuleCanvas.css';
 
 const nodeTypes = {
@@ -38,16 +41,19 @@ function RuleCanvasInternal() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFieldModalOpen, setIsFieldModalOpen] = useState(false);
+  const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
   const [ruleName, setRuleName] = useState('');
   const [ruleDesc, setRuleDesc] = useState('');
+  const [ruleCategory, setRuleCategory] = useState('');
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { exportRule, importRule } = useRuleImportExport(setNodes, setEdges, setRuleName, setRuleDesc);
+  const { autoLayout } = useAutoLayout(nodes, edges, setNodes, takeSnapshot);
 
   const handleExportClick = () => {
-    const { ast, action } = toAST();
-    exportRule({ ruleName, ruleDesc, nodes, edges, ast, action });
+    const { ast, actions } = toAST();
+    exportRule({ ruleName, ruleDesc, nodes, edges, ast, actions });
   };
 
   const handleImportChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,19 +77,27 @@ function RuleCanvasInternal() {
     setIsModalOpen(true);
   };
 
+  useKeyboardShortcuts({
+    onSave: handleSaveClick,
+    onUndo: undo,
+    onRedo: redo
+  });
+
   const submitSave = async () => {
-    const { ast, action } = toAST();
+    const { ast, actions } = toAST();
     try {
       await saveMutation.mutateAsync({
         name: ruleName || 'İsimsiz Kural',
         description: ruleDesc,
+        category: ruleCategory || 'Genel',
         isActive: true,
         ast,
-        action
+        actions
       });
       setIsModalOpen(false);
       setRuleName('');
       setRuleDesc('');
+      setRuleCategory('');
       success('Kural Kaydedildi', 'Kural başarıyla veritabanına kaydedildi.');
     } catch (err) {
       console.error('Save failed', err);
@@ -94,6 +108,8 @@ function RuleCanvasInternal() {
   return (
     <div className="rule-canvas-wrapper" ref={reactFlowWrapper}>
       <div className="canvas-toolbar">
+        <Button onClick={autoLayout} variant="secondary" style={{ marginRight: '0.5rem' }}>Düzenle (Auto-Layout)</Button>
+        <Button onClick={() => setIsSimulatorOpen(true)} variant="secondary" style={{ marginRight: '0.5rem' }}>Simülasyon</Button>
         <Button onClick={() => setIsFieldModalOpen(true)} variant="secondary">Alanları Yönet</Button>
         <div style={{ flex: 1 }}></div>
         <div style={{ display: 'flex', gap: '0.5rem', marginRight: '1rem', borderRight: '1px solid var(--color-border-subtle)', paddingRight: '1rem' }}>
@@ -118,15 +134,23 @@ function RuleCanvasInternal() {
         </div>
       )}
 
+      <RuleSimulator 
+        isOpen={isSimulatorOpen} 
+        onClose={() => setIsSimulatorOpen(false)} 
+        ast={toAST().ast}
+        actions={toAST().actions}
+      />
+
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        onDrop={onDrop}
-        onDragOver={onDragOver}
         nodeTypes={nodeTypes}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
+        deleteKeyCode={['Backspace', 'Delete']}
         fitView
       >
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} color="rgba(255, 255, 255, 0.1)" />
@@ -159,10 +183,17 @@ function RuleCanvasInternal() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <Input 
             label="Kural Adı" 
-            placeholder="Örn: Yaş ve Rol Kontrolü" 
             value={ruleName} 
-            onChange={e => setRuleName(e.target.value)} 
-            fullWidth
+            onChange={(e) => setRuleName(e.target.value)} 
+            placeholder="Örn: VIP Müşteri İndirimi" 
+            fullWidth 
+          />
+          <Input 
+            label="Kategori" 
+            value={ruleCategory} 
+            onChange={(e) => setRuleCategory(e.target.value)} 
+            placeholder="Örn: Risk Kuralları, Kampanya" 
+            fullWidth 
           />
           <Input 
             label="Açıklama" 

@@ -23,13 +23,15 @@ export interface ASTActionNode {
 export interface RulePayload {
   name: string;
   description: string;
+  category?: string;
   isActive: boolean;
   ast: ASTNode | null;
-  action: ASTActionNode | null;
+  actions: ASTActionNode[];
 }
 
 export interface RuleResponse extends RulePayload {
   id: string;
+  category?: string;
   createdAt: string;
   updatedAt: string;
 }
