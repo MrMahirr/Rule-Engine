@@ -1,10 +1,10 @@
 import React from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
-import { ActionNodeData } from '../../types/ruleNode.types';
+import { ActionFlowNode, ActionNodeData } from '../../types/ruleNode.types';
 import { SelectBox } from '../../../../shared/components';
 import './ActionNode.css';
 
-export function ActionNode({ id, data, selected }: NodeProps<ActionNodeData>) {
+export function ActionNode({ id, data, selected }: NodeProps<ActionFlowNode>) {
   const handleActionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (data.onChange) {
       data.onChange(id, { actionType: e.target.value as ActionNodeData['actionType'] });

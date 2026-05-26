@@ -1,10 +1,10 @@
 import React from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
-import { ConditionNodeData, ConditionOperator } from '../../types/ruleNode.types';
+import { ConditionFlowNode, ConditionOperator } from '../../types/ruleNode.types';
 import { Input, SelectBox } from '../../../../shared/components';
 import './ConditionNode.css';
 
-export function ConditionNode({ id, data, selected }: NodeProps<ConditionNodeData>) {
+export function ConditionNode({ id, data, selected }: NodeProps<ConditionFlowNode>) {
   const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (data.onChange) {
       data.onChange(id, { field: e.target.value });

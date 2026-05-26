@@ -1,9 +1,9 @@
 import React from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
-import { LogicGateNodeData, LogicGateType } from '../../types/ruleNode.types';
+import { LogicGateFlowNode, LogicGateType } from '../../types/ruleNode.types';
 import './LogicGateNode.css';
 
-export function LogicGateNode({ id, data, selected }: NodeProps<LogicGateNodeData>) {
+export function LogicGateNode({ id, data, selected }: NodeProps<LogicGateFlowNode>) {
   const toggleGate = () => {
     if (data.onChange) {
       const newGate = data.gateType === LogicGateType.AND ? LogicGateType.OR : LogicGateType.AND;

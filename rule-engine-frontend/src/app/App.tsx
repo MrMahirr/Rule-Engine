@@ -1,5 +1,6 @@
 import { NodePalette } from '../features/RuleEditor/components/NodePalette/NodePalette';
 import { RuleCanvas } from '../features/RuleEditor/components/RuleCanvas/RuleCanvas';
+import { RuleListPanel } from '../features/RuleList/components/RuleListPanel/RuleListPanel';
 import './App.css';
 
 export default function App() {
@@ -12,6 +13,7 @@ export default function App() {
       <main className="app-main">
         <NodePalette />
         <RuleCanvas />
+        <RuleListPanel />
       </main>
     </div>
   );
