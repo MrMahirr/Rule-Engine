@@ -2,10 +2,15 @@ import React from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { ConditionFlowNode, ConditionOperator } from '../../types/ruleNode.types';
 import { Input, SelectBox } from '../../../../shared/components';
+import { useFieldsQuery } from '../../services/useFieldQueries';
 import './ConditionNode.css';
 
 export function ConditionNode({ id, data, selected }: NodeProps<ConditionFlowNode>) {
-  const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const { data: fieldsData, isLoading: isLoadingFields } = useFieldsQuery();
+  const fields = fieldsData?.data || [];
+  const fieldOptions = fields.map(f => ({ value: f.name, label: `${f.name} (${f.type || 'string'})` }));
+
+  const handleFieldChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (data.onChange) {
       data.onChange(id, { field: e.target.value });
     }
@@ -46,9 +51,9 @@ export function ConditionNode({ id, data, selected }: NodeProps<ConditionFlowNod
       </div>
 
       <div className="node-body">
-        <Input 
-          placeholder="Alan (örn: age)" 
-          value={data.field || ''} 
+        <SelectBox 
+          options={[{ value: '', label: isLoadingFields ? 'Alanlar yükleniyor...' : 'Bir alan seçin...' }, ...fieldOptions]}
+          value={data.field || ''}
           onChange={handleFieldChange}
           fullWidth
           className="nodrag"

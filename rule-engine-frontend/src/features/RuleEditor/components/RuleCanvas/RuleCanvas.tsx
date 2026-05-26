@@ -17,6 +17,7 @@ import { useNodeDragAndDrop } from '../../hooks/useNodeDragAndDrop';
 import { useRuleValidation } from '../../hooks/useRuleValidation';
 import { useSaveRuleMutation } from '../../services/useRuleQueries';
 import { Button, Modal, Input } from '../../../../shared/components';
+import { FieldManagementModal } from '../FieldManagementModal/FieldManagementModal';
 import './RuleCanvas.css';
 
 const nodeTypes = {
@@ -34,6 +35,7 @@ function RuleCanvasInternal() {
   const saveMutation = useSaveRuleMutation();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFieldModalOpen, setIsFieldModalOpen] = useState(false);
   const [ruleName, setRuleName] = useState('');
   const [ruleDesc, setRuleDesc] = useState('');
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -69,6 +71,7 @@ function RuleCanvasInternal() {
   return (
     <div className="rule-canvas-wrapper" ref={reactFlowWrapper}>
       <div className="canvas-toolbar">
+        <Button onClick={() => setIsFieldModalOpen(true)} variant="secondary" style={{ marginRight: '0.5rem' }}>Alanları Yönet</Button>
         <Button onClick={handleSaveClick} variant="primary">Kuralı Kaydet</Button>
       </div>
 
@@ -133,6 +136,8 @@ function RuleCanvasInternal() {
           />
         </div>
       </Modal>
+
+      <FieldManagementModal isOpen={isFieldModalOpen} onClose={() => setIsFieldModalOpen(false)} />
     </div>
   );
 }
