@@ -26,7 +26,8 @@ import { FieldManagementModal } from '../FieldManagementModal/FieldManagementMod
 import { RuleVersionModal } from '../RuleVersionModal/RuleVersionModal';
 import { useConfirm } from '../../../../shared/hooks';
 import { RuleSimulator } from '../RuleSimulator/RuleSimulator';
-import { LayoutDashboard, Play, Settings, Undo as UndoIcon, Redo as RedoIcon, Download, Upload, Save, FilePlus, History, Map } from 'lucide-react';
+import { RuleToolbar } from '../RuleToolbar/RuleToolbar';
+import { Map } from 'lucide-react';
 import { RuleEngineContext } from '../../contexts/RuleEngineContext';
 
 const nodeTypes = {
@@ -34,6 +35,13 @@ const nodeTypes = {
   logic_gate: LogicGateNode,
   action: ActionNode,
 };
+
+const NODE_COLORS: Record<string, string> = {
+  condition: 'var(--color-neon-blue)',
+  logic_gate: 'var(--color-neon-purple)',
+  action: 'var(--color-neon-cyan)',
+};
+
 
 function RuleCanvasInternal({ selectedRuleId, setSelectedRuleId }: { selectedRuleId: string | null, setSelectedRuleId: (id: string | null) => void }) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
@@ -185,32 +193,22 @@ function RuleCanvasInternal({ selectedRuleId, setSelectedRuleId }: { selectedRul
 
   return (
     <div className="flex-1 min-h-[500px] lg:h-full w-full shrink-0 lg:shrink relative bg-space-900" ref={reactFlowWrapper}>
-      <div className="absolute top-4 right-4 z-10 flex flex-wrap gap-2 w-[calc(100%-2rem)] justify-end">
-        <Button onClick={autoLayout} variant="secondary" size="sm"><LayoutDashboard size={12} /> Düzenle</Button>
-        <Button onClick={() => setIsSimulatorOpen(true)} variant="secondary" size="sm"><Play size={12} /> Simülasyon</Button>
-        {selectedRuleId && (
-          <Button onClick={() => setIsHistoryModalOpen(true)} variant="secondary" size="sm" className="!bg-neon-blue/10 !text-neon-blue !border-neon-blue/30 hover:!bg-neon-blue/20">
-            <History size={12} /> Geçmiş
-          </Button>
-        )}
-        <Button onClick={() => setIsFieldModalOpen(true)} variant="secondary" size="sm"><Settings size={12} /> Alanları Yönet</Button>
-        <div className="flex-1"></div>
-        <div className="flex gap-2 mr-4 border-r border-border-subtle pr-4">
-          <Button onClick={undo} variant="ghost" size="sm" disabled={!canUndo} title="Geri Al (Ctrl+Z)"><UndoIcon size={12} /> Geri Al</Button>
-          <Button onClick={redo} variant="ghost" size="sm" disabled={!canRedo} title="Yinele (Ctrl+Y)"><RedoIcon size={12} /> Yinele</Button>
-        </div>
-        <input 
-          type="file" 
-          accept=".json" 
-          ref={fileInputRef} 
-          className="hidden" 
-          onChange={handleImportChange} 
-        />
-        <Button onClick={handleNewRule} variant="secondary" size="sm"><FilePlus size={12} /> Yeni Kural</Button>
-        <Button onClick={() => fileInputRef.current?.click()} variant="secondary" size="sm"><Upload size={12} /> İçe Aktar</Button>
-        <Button onClick={handleExportClick} variant="secondary" size="sm"><Download size={12} /> Dışa Aktar</Button>
-        <Button onClick={handleSaveClick} variant="primary" size="sm"><Save size={12} /> {selectedRuleId ? 'Kuralı Güncelle' : 'Kuralı Kaydet'}</Button>
-      </div>
+      <RuleToolbar
+        autoLayout={autoLayout}
+        setIsSimulatorOpen={setIsSimulatorOpen}
+        selectedRuleId={selectedRuleId}
+        setIsHistoryModalOpen={setIsHistoryModalOpen}
+        setIsFieldModalOpen={setIsFieldModalOpen}
+        undo={undo}
+        redo={redo}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        fileInputRef={fileInputRef}
+        handleImportChange={handleImportChange}
+        handleNewRule={handleNewRule}
+        handleExportClick={handleExportClick}
+        handleSaveClick={handleSaveClick}
+      />
 
       {validationErrors.length > 0 && (
         <div className="absolute top-16 right-4 z-10 bg-red-500/90 text-white p-4 rounded-lg text-sm max-w-[300px] flex flex-col gap-2 shadow-lg backdrop-blur-sm">
@@ -257,14 +255,7 @@ function RuleCanvasInternal({ selectedRuleId, setSelectedRuleId }: { selectedRul
         {isMapVisible && (
           <MiniMap 
             className="border border-border-subtle shadow-md rounded-md overflow-hidden"
-            nodeColor={(node) => {
-              switch (node.type) {
-                case 'condition': return 'var(--color-neon-blue)';
-                case 'logic_gate': return 'var(--color-neon-purple)';
-                case 'action': return 'var(--color-neon-cyan)';
-                default: return 'var(--color-text-primary)';
-              }
-            }}
+            nodeColor={(node) => NODE_COLORS[node.type || ''] || 'var(--color-text-primary)'}
             maskColor="var(--color-minimap-mask)"
             style={{ backgroundColor: 'var(--color-minimap-bg)' }}
           />
