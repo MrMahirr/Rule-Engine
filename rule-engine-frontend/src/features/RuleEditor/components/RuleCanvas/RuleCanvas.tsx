@@ -248,6 +248,7 @@ function RuleCanvasInternal({ selectedRuleId, setSelectedRuleId }: { selectedRul
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} color="var(--color-text-muted)" />
         <Controls className="rule-canvas-controls" />
         <MiniMap 
+          className="border border-border-subtle shadow-md rounded-md overflow-hidden"
           nodeColor={(node) => {
             switch (node.type) {
               case 'condition': return 'var(--color-neon-blue)';
@@ -256,8 +257,8 @@ function RuleCanvasInternal({ selectedRuleId, setSelectedRuleId }: { selectedRul
               default: return 'var(--color-text-primary)';
             }
           }}
-          maskColor="color-mix(in srgb, var(--color-space-900) 70%, transparent)"
-          style={{ backgroundColor: 'var(--color-surface-secondary)' }}
+          maskColor="var(--color-minimap-mask)"
+          style={{ backgroundColor: 'var(--color-minimap-bg)' }}
         />
         </ReactFlow>
       </RuleEngineContext.Provider>
