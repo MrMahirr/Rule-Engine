@@ -6,6 +6,7 @@ import {
   Background,
   ReactFlowProvider,
   BackgroundVariant,
+  ControlButton,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -25,7 +26,7 @@ import { FieldManagementModal } from '../FieldManagementModal/FieldManagementMod
 import { RuleVersionModal } from '../RuleVersionModal/RuleVersionModal';
 import { useConfirm } from '../../../../shared/hooks';
 import { RuleSimulator } from '../RuleSimulator/RuleSimulator';
-import { LayoutDashboard, Play, Settings, Undo as UndoIcon, Redo as RedoIcon, Download, Upload, Save, FilePlus, History } from 'lucide-react';
+import { LayoutDashboard, Play, Settings, Undo as UndoIcon, Redo as RedoIcon, Download, Upload, Save, FilePlus, History, Map } from 'lucide-react';
 import { RuleEngineContext } from '../../contexts/RuleEngineContext';
 
 const nodeTypes = {
@@ -57,6 +58,7 @@ function RuleCanvasInternal({ selectedRuleId, setSelectedRuleId }: { selectedRul
   const [rulePriority, setRulePriority] = useState<number>(1);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [needsLayout, setNeedsLayout] = useState(false);
+  const [isMapVisible, setIsMapVisible] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { exportRule, importRule } = useRuleImportExport(setNodes, setEdges, setRuleName, setRuleDesc);
@@ -244,22 +246,29 @@ function RuleCanvasInternal({ selectedRuleId, setSelectedRuleId }: { selectedRul
         onDrop={onDrop}
         deleteKeyCode={['Backspace', 'Delete']}
         fitView
+        proOptions={{ hideAttribution: true }}
       >
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} color="var(--color-text-muted)" />
-        <Controls className="rule-canvas-controls" />
-        <MiniMap 
-          className="border border-border-subtle shadow-md rounded-md overflow-hidden"
-          nodeColor={(node) => {
-            switch (node.type) {
-              case 'condition': return 'var(--color-neon-blue)';
-              case 'logic_gate': return 'var(--color-neon-purple)';
-              case 'action': return 'var(--color-neon-cyan)';
-              default: return 'var(--color-text-primary)';
-            }
-          }}
-          maskColor="var(--color-minimap-mask)"
-          style={{ backgroundColor: 'var(--color-minimap-bg)' }}
-        />
+        <Controls className="rule-canvas-controls">
+          <ControlButton onClick={() => setIsMapVisible((v) => !v)} title="Haritayı Aç/Kapat">
+            <Map className={isMapVisible ? "text-neon-blue" : "text-text-muted opacity-50"} />
+          </ControlButton>
+        </Controls>
+        {isMapVisible && (
+          <MiniMap 
+            className="border border-border-subtle shadow-md rounded-md overflow-hidden"
+            nodeColor={(node) => {
+              switch (node.type) {
+                case 'condition': return 'var(--color-neon-blue)';
+                case 'logic_gate': return 'var(--color-neon-purple)';
+                case 'action': return 'var(--color-neon-cyan)';
+                default: return 'var(--color-text-primary)';
+              }
+            }}
+            maskColor="var(--color-minimap-mask)"
+            style={{ backgroundColor: 'var(--color-minimap-bg)' }}
+          />
+        )}
         </ReactFlow>
       </RuleEngineContext.Provider>
 
