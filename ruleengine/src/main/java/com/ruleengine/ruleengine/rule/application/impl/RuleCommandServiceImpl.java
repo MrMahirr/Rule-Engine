@@ -1,5 +1,6 @@
 package com.ruleengine.ruleengine.rule.application.impl;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -18,6 +19,8 @@ import com.ruleengine.ruleengine.rule.infrastructure.cache.RuleCacheKeys;
 import com.ruleengine.ruleengine.rule.infrastructure.mapper.RuleMapper;
 import com.ruleengine.ruleengine.rule.infrastructure.persistence.RuleDefinitionEntity;
 import com.ruleengine.ruleengine.rule.infrastructure.persistence.RuleDefinitionRepository;
+import com.ruleengine.ruleengine.rule.infrastructure.persistence.RuleVersionEntity;
+import com.ruleengine.ruleengine.rule.infrastructure.persistence.RuleVersionRepository;
 import com.ruleengine.ruleengine.rule.validation.RuleAstValidator;
 import com.ruleengine.ruleengine.rule.validation.RuleFieldValidator;
 
@@ -27,6 +30,7 @@ public class RuleCommandServiceImpl implements RuleCommandService {
 
     private final RuleDefinitionRepository ruleRepository;
     private final FieldDefinitionRepository fieldRepository;
+    private final RuleVersionRepository versionRepository;
     private final RuleMapper ruleMapper;
     private final RuleAstValidator astValidator;
     private final RuleFieldValidator fieldValidator;
@@ -34,11 +38,13 @@ public class RuleCommandServiceImpl implements RuleCommandService {
     public RuleCommandServiceImpl(
             RuleDefinitionRepository ruleRepository,
             FieldDefinitionRepository fieldRepository,
+            RuleVersionRepository versionRepository,
             RuleMapper ruleMapper,
             RuleAstValidator astValidator,
             RuleFieldValidator fieldValidator) {
         this.ruleRepository = ruleRepository;
         this.fieldRepository = fieldRepository;
+        this.versionRepository = versionRepository;
         this.ruleMapper = ruleMapper;
         this.astValidator = astValidator;
         this.fieldValidator = fieldValidator;
@@ -58,6 +64,8 @@ public class RuleCommandServiceImpl implements RuleCommandService {
         }
 
         RuleDefinitionEntity saved = ruleRepository.save(ruleMapper.toEntity(request));
+        saveVersion(saved);
+        
         return ruleMapper.toResponse(saved);
     }
 
@@ -85,6 +93,8 @@ public class RuleCommandServiceImpl implements RuleCommandService {
         entity.setActions(ruleMapper.toActionMaps(request.actions()));
 
         RuleDefinitionEntity saved = ruleRepository.save(entity);
+        saveVersion(saved);
+        
         return ruleMapper.toResponse(saved);
     }
 
@@ -101,6 +111,36 @@ public class RuleCommandServiceImpl implements RuleCommandService {
     public void deleteRule(UUID id) {
         RuleDefinitionEntity entity = getEntity(id);
         ruleRepository.delete(entity);
+    }
+    
+    @Override
+    @CacheEvict(cacheNames = {RuleCacheKeys.ACTIVE_RULES, RuleCacheKeys.RULE_BY_ID}, allEntries = true)
+    public RuleResponse restoreVersion(UUID id, UUID versionId) {
+        RuleDefinitionEntity entity = getEntity(id);
+        RuleVersionEntity versionEntity = versionRepository.findById(versionId)
+                .orElseThrow(() -> new ResourceNotFoundException("RuleVersion", versionId));
+                
+        entity.setAst(versionEntity.getAst());
+        entity.setActions(versionEntity.getActions());
+        
+        RuleDefinitionEntity saved = ruleRepository.save(entity);
+        saveVersion(saved);
+        
+        return ruleMapper.toResponse(saved);
+    }
+
+    private void saveVersion(RuleDefinitionEntity entity) {
+        Integer maxVersion = versionRepository.findMaxVersionByRuleId(entity.getId());
+        int newVersionNumber = (maxVersion == null ? 0 : maxVersion) + 1;
+        
+        RuleVersionEntity versionEntity = new RuleVersionEntity();
+        versionEntity.setRuleId(entity.getId());
+        versionEntity.setVersionNumber(newVersionNumber);
+        versionEntity.setAst(entity.getAst());
+        versionEntity.setActions(entity.getActions());
+        versionEntity.setCreatedAt(LocalDateTime.now());
+        
+        versionRepository.save(versionEntity);
     }
 
     private RuleDefinitionEntity getEntity(UUID id) {

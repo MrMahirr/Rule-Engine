@@ -22,9 +22,10 @@ import { useSaveRuleMutation, useUpdateRuleMutation, useRuleByIdQuery } from '..
 import { useASTParser } from '../../hooks/useASTParser';
 import { Button, Modal, Input, useToast } from '../../../../shared/components';
 import { FieldManagementModal } from '../FieldManagementModal/FieldManagementModal';
+import { RuleVersionModal } from '../RuleVersionModal/RuleVersionModal';
 import { useConfirm } from '../../../../shared/hooks';
 import { RuleSimulator } from '../RuleSimulator/RuleSimulator';
-import { LayoutDashboard, Play, Settings, Undo as UndoIcon, Redo as RedoIcon, Download, Upload, Save, FilePlus } from 'lucide-react';
+import { LayoutDashboard, Play, Settings, Undo as UndoIcon, Redo as RedoIcon, Download, Upload, Save, FilePlus, History } from 'lucide-react';
 import { RuleEngineContext } from '../../contexts/RuleEngineContext';
 
 const nodeTypes = {
@@ -49,6 +50,7 @@ function RuleCanvasInternal({ selectedRuleId, setSelectedRuleId }: { selectedRul
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFieldModalOpen, setIsFieldModalOpen] = useState(false);
   const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [ruleName, setRuleName] = useState('');
   const [ruleDesc, setRuleDesc] = useState('');
   const [ruleCategory, setRuleCategory] = useState('');
@@ -184,6 +186,11 @@ function RuleCanvasInternal({ selectedRuleId, setSelectedRuleId }: { selectedRul
       <div className="absolute top-4 right-4 z-10 flex flex-wrap gap-2 w-[calc(100%-2rem)] justify-end">
         <Button onClick={autoLayout} variant="secondary" size="sm"><LayoutDashboard size={12} /> Düzenle</Button>
         <Button onClick={() => setIsSimulatorOpen(true)} variant="secondary" size="sm"><Play size={12} /> Simülasyon</Button>
+        {selectedRuleId && (
+          <Button onClick={() => setIsHistoryModalOpen(true)} variant="secondary" size="sm" className="!bg-neon-blue/10 !text-neon-blue !border-neon-blue/30 hover:!bg-neon-blue/20">
+            <History size={12} /> Geçmiş
+          </Button>
+        )}
         <Button onClick={() => setIsFieldModalOpen(true)} variant="secondary" size="sm"><Settings size={12} /> Alanları Yönet</Button>
         <div className="flex-1"></div>
         <div className="flex gap-2 mr-4 border-r border-border-subtle pr-4">
@@ -214,7 +221,16 @@ function RuleCanvasInternal({ selectedRuleId, setSelectedRuleId }: { selectedRul
         onClose={() => setIsSimulatorOpen(false)} 
         ast={toAST().ast}
         actions={toAST().actions}
+        ruleId={selectedRuleId || undefined}
       />
+      
+      {selectedRuleId && (
+        <RuleVersionModal 
+          isOpen={isHistoryModalOpen} 
+          onClose={() => setIsHistoryModalOpen(false)} 
+          ruleId={selectedRuleId} 
+        />
+      )}
 
       <RuleEngineContext.Provider value={{ takeSnapshot }}>
         <ReactFlow

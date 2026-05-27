@@ -99,11 +99,49 @@ export function useToggleRuleMutation() {
 
 export function useEvaluateRuleMutation() {
   return useMutation({
-    mutationFn: (payload: { ruleId?: string; facts: Record<string, unknown> }) =>
-      apiClient.request<ApiResponse<RuleEvaluationResponse>>({
+    mutationFn: (payload: { ruleId?: string; facts: Record<string, any> }) =>
+      apiClient.request<ApiResponse<any>>({
         endpoint: ApiEndpoint.EVALUATE_RULE,
         method: HttpMethod.POST,
         data: payload,
       }),
+  });
+}
+
+export function useBatchEvaluateMutation() {
+  return useMutation({
+    mutationFn: (payload: { ruleId?: string; factsList: Record<string, any>[] }) =>
+      apiClient.request<ApiResponse<any>>({
+        endpoint: ApiEndpoint.EVALUATE_BATCH,
+        method: HttpMethod.POST,
+        data: payload,
+      }),
+  });
+}
+
+export function useRuleVersionsQuery(ruleId: string) {
+  return useQuery({
+    queryKey: [...ruleKeys.detail(ruleId), 'versions'],
+    queryFn: () =>
+      apiClient.request<ApiResponse<any>>({
+        endpoint: ApiEndpoint.GET_RULE_VERSIONS.replace(':id', ruleId),
+        method: HttpMethod.GET,
+      }),
+    enabled: !!ruleId,
+  });
+}
+
+export function useRestoreVersionMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ ruleId, versionId }: { ruleId: string; versionId: string }) =>
+      apiClient.request<ApiResponse<RuleResponse>>({
+        endpoint: ApiEndpoint.RESTORE_RULE_VERSION.replace(':id', ruleId).replace(':versionId', versionId),
+        method: HttpMethod.POST,
+      }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ruleKeys.detail(variables.ruleId) });
+      queryClient.invalidateQueries({ queryKey: ruleKeys.lists() });
+    },
   });
 }

@@ -18,6 +18,7 @@ import com.ruleengine.ruleengine.rule.infrastructure.mapper.RuleMapper;
 import com.ruleengine.ruleengine.rule.infrastructure.persistence.RuleDefinitionEntity;
 import com.ruleengine.ruleengine.rule.infrastructure.persistence.RuleDefinitionRepository;
 import com.ruleengine.ruleengine.rule.infrastructure.persistence.RuleDefinitionSpecification;
+import com.ruleengine.ruleengine.rule.infrastructure.persistence.RuleVersionRepository;
 
 @Service
 @Transactional(readOnly = true)
@@ -28,10 +29,12 @@ public class RuleQueryServiceImpl implements RuleQueryService {
             Sort.Order.asc("createdAt"));
 
     private final RuleDefinitionRepository ruleRepository;
+    private final RuleVersionRepository versionRepository;
     private final RuleMapper ruleMapper;
 
-    public RuleQueryServiceImpl(RuleDefinitionRepository ruleRepository, RuleMapper ruleMapper) {
+    public RuleQueryServiceImpl(RuleDefinitionRepository ruleRepository, RuleVersionRepository versionRepository, RuleMapper ruleMapper) {
         this.ruleRepository = ruleRepository;
+        this.versionRepository = versionRepository;
         this.ruleMapper = ruleMapper;
     }
 
@@ -49,15 +52,19 @@ public class RuleQueryServiceImpl implements RuleQueryService {
                 .and(RuleDefinitionSpecification.active(active))
                 .and(RuleDefinitionSpecification.nameContains(search));
 
-        Page<RuleResponse> page = ruleRepository.findAll(specification, withDefaultSort(pageable))
+        Page<RuleResponse> page = ruleRepository.findAll(specification, ensureSorting(pageable))
                 .map(ruleMapper::toResponse);
         return PaginatedResponse.from(page);
     }
 
-    private Pageable withDefaultSort(Pageable pageable) {
-        if (pageable == null) {
-            return PageRequest.of(0, 20, DEFAULT_SORT);
-        }
+    @Override
+    public java.util.List<com.ruleengine.ruleengine.rule.api.dto.RuleVersionDto> getRuleVersions(java.util.UUID ruleId) {
+        return versionRepository.findByRuleIdOrderByVersionNumberDesc(ruleId).stream()
+                .map(v -> new com.ruleengine.ruleengine.rule.api.dto.RuleVersionDto(v.getId(), v.getRuleId(), v.getVersionNumber(), v.getCreatedAt()))
+                .toList();
+    }
+
+    private Pageable ensureSorting(Pageable pageable) {
         if (pageable.getSort().isUnsorted()) {
             return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), DEFAULT_SORT);
         }

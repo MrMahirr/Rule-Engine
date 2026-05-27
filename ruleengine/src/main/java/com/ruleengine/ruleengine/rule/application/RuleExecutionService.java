@@ -6,4 +6,6 @@ import com.ruleengine.ruleengine.rule.api.dto.RuleEvaluationResponse;
 public interface RuleExecutionService {
 
     RuleEvaluationResponse evaluate(RuleEvaluationRequest request);
+    
+    com.ruleengine.ruleengine.rule.api.dto.RuleBatchEvaluationResponse evaluateBatch(com.ruleengine.ruleengine.rule.api.dto.RuleBatchEvaluationRequest request);
 }

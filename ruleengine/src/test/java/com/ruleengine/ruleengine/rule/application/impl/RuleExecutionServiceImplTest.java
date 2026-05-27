@@ -30,6 +30,7 @@ import static org.mockito.Mockito.when;
 class RuleExecutionServiceImplTest {
 
     private final RuleCacheService cacheService = mock(RuleCacheService.class);
+    private final RuleExecutionLogger executionLogger = mock(RuleExecutionLogger.class);
     private final ContainsOperator containsOperator = new ContainsOperator();
     private final RuleExecutionServiceImpl service = new RuleExecutionServiceImpl(
             cacheService,
@@ -42,7 +43,8 @@ class RuleExecutionServiceImplTest {
                     new LessOrEqualOperator(),
                     containsOperator,
                     new NotContainsOperator(containsOperator))),
-            new RuleMapper());
+            new RuleMapper(),
+            executionLogger);
 
     @Test
     void evaluatesAllActiveRulesWhenRuleIdIsNotProvided() {
@@ -59,6 +61,7 @@ class RuleExecutionServiceImplTest {
         assertThat(response.matchedRules()).hasSize(1);
         assertThat(response.matchedRules().get(0).ruleName()).isEqualTo("High value");
         verify(cacheService).getActiveRules();
+        verify(executionLogger).logExecution(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq(response), org.mockito.ArgumentMatchers.anyLong());
     }
 
     @Test
@@ -73,6 +76,7 @@ class RuleExecutionServiceImplTest {
         assertThat(response.matched()).isTrue();
         assertThat(response.evaluatedRuleCount()).isEqualTo(1);
         verify(cacheService).getRuleById(id);
+        verify(executionLogger).logExecution(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq(response), org.mockito.ArgumentMatchers.anyLong());
     }
 
     private CachedRuleDefinition rule(String name, String operator, String value) {

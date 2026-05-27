@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 
 import com.ruleengine.ruleengine.field.infrastructure.FieldDefinitionRepository;
 import com.ruleengine.ruleengine.rule.infrastructure.persistence.RuleDefinitionRepository;
+import com.ruleengine.ruleengine.rule.infrastructure.persistence.RuleExecutionLogRepository;
 
 import static org.mockito.Mockito.mock;
 
@@ -33,6 +34,11 @@ class RuleengineApplicationTests {
         @Bean
         FieldDefinitionRepository fieldDefinitionRepository() {
             return mock(FieldDefinitionRepository.class);
+        }
+
+        @Bean
+        RuleExecutionLogRepository ruleExecutionLogRepository() {
+            return mock(RuleExecutionLogRepository.class);
         }
     }
 }

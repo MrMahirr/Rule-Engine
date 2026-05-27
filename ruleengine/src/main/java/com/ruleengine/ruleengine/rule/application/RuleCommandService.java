@@ -16,4 +16,6 @@ public interface RuleCommandService {
     RuleResponse updateRule(UUID id, RuleUpdateRequest request);
 
     void deleteRule(UUID id);
+
+    RuleResponse restoreVersion(UUID id, UUID versionId);
 }

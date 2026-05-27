@@ -12,4 +12,6 @@ public interface RuleQueryService {
     RuleResponse getRule(UUID id);
 
     PaginatedResponse<RuleResponse> getRules(String category, Boolean active, String search, Pageable pageable);
+
+    java.util.List<com.ruleengine.ruleengine.rule.api.dto.RuleVersionDto> getRuleVersions(UUID ruleId);
 }

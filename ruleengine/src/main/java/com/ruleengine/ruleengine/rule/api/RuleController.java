@@ -113,4 +113,23 @@ public class RuleController {
     public ApiResponse<RuleEvaluationResponse> evaluate(@Valid @RequestBody RuleEvaluationRequest request) {
         return ApiResponse.success("Evaluation completed", executionService.evaluate(request));
     }
+
+    @PostMapping("/evaluate-batch")
+    @Operation(summary = "Batch evaluate rules against multiple facts")
+    public ApiResponse<com.ruleengine.ruleengine.rule.api.dto.RuleBatchEvaluationResponse> evaluateBatch(
+            @Valid @RequestBody com.ruleengine.ruleengine.rule.api.dto.RuleBatchEvaluationRequest request) {
+        return ApiResponse.success("Batch evaluation completed", executionService.evaluateBatch(request));
+    }
+
+    @GetMapping("/{id}/versions")
+    @Operation(summary = "Get rule versions")
+    public ApiResponse<java.util.List<com.ruleengine.ruleengine.rule.api.dto.RuleVersionDto>> getRuleVersions(@PathVariable UUID id) {
+        return ApiResponse.success("Rule versions retrieved", queryService.getRuleVersions(id));
+    }
+
+    @PostMapping("/{id}/restore/{versionId}")
+    @Operation(summary = "Restore a specific rule version")
+    public ApiResponse<RuleResponse> restoreVersion(@PathVariable UUID id, @PathVariable UUID versionId) {
+        return ApiResponse.success("Rule version restored", commandService.restoreVersion(id, versionId));
+    }
 }
