@@ -1,7 +1,8 @@
 import { Handle, Position, NodeProps, useReactFlow } from '@xyflow/react';
-import { Database, Copy, Trash2, KeyRound } from 'lucide-react';
+import { Database, Copy, Trash2 } from 'lucide-react';
 import { ActionFlowNode } from '../../types/ruleNode.types';
 import { useRuleEngineContext } from '../../contexts/RuleEngineContext';
+import { Input, SelectBox } from '../../../../shared/components';
 
 export function ActionNode({ id, data, selected }: NodeProps<ActionFlowNode>) {
   const { setNodes } = useReactFlow();
@@ -32,41 +33,40 @@ export function ActionNode({ id, data, selected }: NodeProps<ActionFlowNode>) {
   };
 
   return (
-    <div className={`w-[280px] bg-surface-elevated rounded-xl shadow-[0_0_15px_rgba(239,68,68,0.15)] border border-border-subtle flex flex-col overflow-hidden ${selected ? 'border-red-400 shadow-[0_0_20px_rgba(239,68,68,0.3)]' : ''}`}>
-      <Handle type="target" position={Position.Left} className="w-3 h-3 bg-red-400 border-2 border-surface-elevated" />
+    <div className={`w-[280px] bg-surface-elevated rounded-xl shadow-[0_0_15px_rgba(239,68,68,0.15)] border border-border-subtle flex flex-col overflow-hidden transition-all duration-300 ${selected ? 'border-red-400 shadow-[0_0_25px_rgba(239,68,68,0.4)] -translate-y-1' : ''}`}>
+      <Handle type="target" position={Position.Left} className="w-3 h-3 bg-red-400 border-2 border-surface-elevated transition-transform hover:scale-150" />
       
-      <div className="bg-red-500/10 border-b border-red-500/20 p-3 flex items-center gap-2">
+      <div className="bg-gradient-to-r from-red-500/20 to-transparent border-b border-red-500/20 p-3 flex items-center gap-2">
         <Database size={16} className="text-red-400" />
         <span className="font-semibold text-sm text-text-primary uppercase tracking-wider flex-1">Aksiyon</span>
-        <button onClick={onClone} className="text-text-muted hover:text-text-primary p-1 rounded hover:bg-surface-secondary" title="Kopyala"><Copy size={14} /></button>
-        <button onClick={onDelete} className="text-text-muted hover:text-red-400 p-1 rounded hover:bg-red-500/10" title="Sil"><Trash2 size={14} /></button>
+        <button onClick={onClone} className="text-text-muted hover:text-text-primary p-1 rounded hover:bg-surface-secondary transition-colors" title="Kopyala"><Copy size={14} /></button>
+        <button onClick={onDelete} className="text-text-muted hover:text-red-400 p-1 rounded hover:bg-red-500/10 transition-colors" title="Sil"><Trash2 size={14} /></button>
       </div>
 
-      <div className="p-4 flex flex-col gap-3">
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-text-secondary uppercase">Aksiyon Tipi</label>
-          <select 
-            className="w-full bg-space-900 border border-border-subtle rounded text-text-primary text-sm p-2 outline-none focus:border-red-400"
-            value={data.actionType as string || ''}
-            onChange={(e) => updateData({ actionType: e.target.value })}
-          >
-            <option value="">Seçiniz...</option>
-            <option value="ALLOW">İzin Ver (ALLOW)</option>
-            <option value="DENY">Reddet (DENY)</option>
-            <option value="LOG">Kayıt Al (LOG)</option>
-            <option value="NOTIFY">Bildirim Gönder</option>
-            <option value="CUSTOM">Özel Aksiyon</option>
-          </select>
-        </div>
+      <div className="p-4 flex flex-col gap-4">
+        <SelectBox
+          label="Aksiyon Tipi"
+          value={data.actionType as string || ''}
+          onChange={(e) => updateData({ actionType: e.target.value })}
+          options={[
+            { value: '', label: 'Seçiniz...' },
+            { value: 'ALLOW', label: 'İzin Ver (ALLOW)' },
+            { value: 'DENY', label: 'Reddet (DENY)' },
+            { value: 'LOG', label: 'Kayıt Al (LOG)' },
+            { value: 'NOTIFY', label: 'Bildirim Gönder' },
+            { value: 'CUSTOM', label: 'Özel Aksiyon' },
+          ]}
+          error={!data.actionType ? 'Zorunlu' : undefined}
+        />
 
         {data.actionType === 'CUSTOM' && (
-          <div className="flex flex-col gap-1.5 mt-2">
-            <label className="text-xs font-medium text-text-secondary uppercase">Özel Aksiyon Detayı</label>
-            <input 
-              className="w-full bg-space-900 border border-border-subtle rounded text-text-primary text-sm p-2 outline-none focus:border-red-400"
+          <div className="mt-2">
+            <Input
+              label="Özel Aksiyon Detayı"
               value={data.params?.customActionPayload || ''}
               onChange={(e) => updateData({ params: { ...(data.params || {}), customActionPayload: e.target.value } })}
               placeholder="Örn: webhookTetikle, bakiyeDus..."
+              error={!data.params?.customActionPayload ? 'Zorunlu' : undefined}
             />
           </div>
         )}

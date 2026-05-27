@@ -4,6 +4,7 @@ import { Filter, Copy, Trash2 } from 'lucide-react';
 import { ConditionFlowNode, ConditionOperator } from '../../types/ruleNode.types';
 import { useFieldsQuery } from '../../services/useFieldQueries';
 import { useRuleEngineContext } from '../../contexts/RuleEngineContext';
+import { Input, SelectBox } from '../../../../shared/components';
 
 export function ConditionNode({ id, data, selected }: NodeProps<ConditionFlowNode>) {
   const { setNodes } = useReactFlow();
@@ -40,66 +41,58 @@ export function ConditionNode({ id, data, selected }: NodeProps<ConditionFlowNod
   };
 
   return (
-    <div className={`w-[280px] bg-surface-elevated rounded-xl shadow-[0_0_15px_rgba(14,165,233,0.15)] border border-border-subtle flex flex-col overflow-hidden ${selected ? 'border-neon-blue shadow-[0_0_20px_rgba(14,165,233,0.3)]' : ''}`}>
-      <Handle type="target" position={Position.Left} className="w-3 h-3 bg-neon-blue border-2 border-surface-elevated" />
+    <div className={`w-[280px] bg-surface-elevated rounded-xl shadow-[0_0_15px_rgba(14,165,233,0.15)] border border-border-subtle flex flex-col overflow-hidden transition-all duration-300 ${selected ? 'border-neon-blue shadow-[0_0_25px_rgba(14,165,233,0.4)] -translate-y-1' : ''}`}>
+      <Handle type="target" position={Position.Left} className="w-3 h-3 bg-neon-blue border-2 border-surface-elevated transition-transform hover:scale-150" />
       
-      <div className="bg-neon-blue/10 border-b border-neon-blue/20 p-3 flex items-center gap-2">
+      <div className="bg-gradient-to-r from-neon-blue/20 to-transparent border-b border-neon-blue/20 p-3 flex items-center gap-2">
         <Filter size={16} className="text-neon-blue" />
         <span className="font-semibold text-sm text-text-primary uppercase tracking-wider flex-1">Koşul</span>
-        <button onClick={onClone} className="text-text-muted hover:text-text-primary p-1 rounded hover:bg-surface-secondary" title="Kopyala"><Copy size={14} /></button>
-        <button onClick={onDelete} className="text-text-muted hover:text-red-400 p-1 rounded hover:bg-red-500/10" title="Sil"><Trash2 size={14} /></button>
+        <button onClick={onClone} className="text-text-muted hover:text-text-primary p-1 rounded hover:bg-surface-secondary transition-colors" title="Kopyala"><Copy size={14} /></button>
+        <button onClick={onDelete} className="text-text-muted hover:text-red-400 p-1 rounded hover:bg-red-500/10 transition-colors" title="Sil"><Trash2 size={14} /></button>
       </div>
 
-      <div className="p-4 flex flex-col gap-3">
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-text-secondary uppercase">Alan (Field)</label>
-          <select 
-            className="w-full bg-space-900 border border-border-subtle rounded text-text-primary text-sm p-2 outline-none focus:border-neon-blue"
-            value={data.field as string || ''} 
-            onChange={(e) => updateData({ field: e.target.value })}
-          >
-            <option value="">Alan Seçin</option>
-            {fields.map(f => (
-              <option key={f.id} value={f.name}>{f.name}</option>
-            ))}
-          </select>
-        </div>
+      <div className="p-4 flex flex-col gap-4">
+        <SelectBox
+          label="Alan (Field)"
+          value={data.field as string || ''}
+          onChange={(e) => updateData({ field: e.target.value })}
+          options={[
+            { value: '', label: 'Alan Seçin' },
+            ...fields.map(f => ({ value: f.name, label: f.name }))
+          ]}
+          error={!data.field ? 'Zorunlu' : undefined}
+        />
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-text-secondary uppercase">Operatör</label>
-          <select 
-            className="w-full bg-space-900 border border-border-subtle rounded text-text-primary text-sm p-2 outline-none focus:border-neon-blue"
-            value={data.operator as string || ''}
-            onChange={(e) => updateData({ operator: e.target.value as ConditionOperator })}
-            disabled={!data.field}
-          >
-            <option value="">Operatör Seçin</option>
-            {Object.values(ConditionOperator).map(op => (
-              <option key={op} value={op}>{op.toUpperCase()}</option>
-            ))}
-          </select>
-        </div>
+        <SelectBox
+          label="Operatör"
+          value={data.operator as string || ''}
+          onChange={(e) => updateData({ operator: e.target.value as ConditionOperator })}
+          disabled={!data.field}
+          options={[
+            { value: '', label: 'Operatör Seçin' },
+            ...Object.values(ConditionOperator).map(op => ({ value: op, label: op.toUpperCase() }))
+          ]}
+          error={data.field && !data.operator ? 'Zorunlu' : undefined}
+        />
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-text-secondary uppercase">Değer</label>
-          <input 
-            className="w-full bg-space-900 border border-border-subtle rounded text-text-primary text-sm p-2 outline-none focus:border-neon-blue"
-            type={selectedField?.type === 'NUMBER' && data.operator !== ConditionOperator.IN && data.operator !== ConditionOperator.NOT_IN ? 'number' : 'text'}
-            value={data.value as string || ''}
-            onChange={(e) => updateData({ value: e.target.value })}
-            disabled={!data.operator}
-            placeholder={
-              data.operator === ConditionOperator.IN || data.operator === ConditionOperator.NOT_IN
-                ? 'Örn: A,B,C'
-                : data.operator === ConditionOperator.MATCHES
-                ? 'Örn: ^[A-Z]+$'
-                : 'Değer girin'
-            }
-          />
-        </div>
+        <Input
+          label="Değer"
+          type={selectedField?.type === 'NUMBER' && data.operator !== ConditionOperator.IN && data.operator !== ConditionOperator.NOT_IN ? 'number' : 'text'}
+          value={data.value as string || ''}
+          onChange={(e) => updateData({ value: e.target.value })}
+          disabled={!data.operator}
+          placeholder={
+            data.operator === ConditionOperator.IN || data.operator === ConditionOperator.NOT_IN
+              ? 'Örn: A,B,C'
+              : data.operator === ConditionOperator.MATCHES
+              ? 'Örn: ^[A-Z]+$'
+              : 'Değer girin'
+          }
+          error={data.operator && !data.value ? 'Zorunlu' : undefined}
+        />
       </div>
       
-      <Handle type="source" position={Position.Right} className="w-3 h-3 bg-neon-blue border-2 border-surface-elevated" />
+      <Handle type="source" position={Position.Right} className="w-3 h-3 bg-neon-blue border-2 border-surface-elevated transition-transform hover:scale-150" />
     </div>
   );
 }
