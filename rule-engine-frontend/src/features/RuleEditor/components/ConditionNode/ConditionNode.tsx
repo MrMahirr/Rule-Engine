@@ -74,8 +74,8 @@ export function ConditionNode({ id, data, selected }: NodeProps<ConditionFlowNod
             disabled={!data.field}
           >
             <option value="">Operatör Seçin</option>
-            {['==', '!=', '>', '<', '>=', '<=', 'CONTAINS', 'NOT_CONTAINS'].map(op => (
-              <option key={op} value={op}>{op}</option>
+            {Object.values(ConditionOperator).map(op => (
+              <option key={op} value={op}>{op.toUpperCase()}</option>
             ))}
           </select>
         </div>
