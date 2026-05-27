@@ -20,8 +20,7 @@ export function evaluateAST(ast: ASTNode | null, data: any): boolean {
       case '>=': return Number(fieldValue) >= Number(condition.value);
       case '<=': return Number(fieldValue) <= Number(condition.value);
       case 'contains': return valueStr.includes(targetStr);
-      case 'startsWith': return valueStr.startsWith(targetStr);
-      case 'endsWith': return valueStr.endsWith(targetStr);
+      case 'not_contains': return !valueStr.includes(targetStr);
       default: return false;
     }
   }

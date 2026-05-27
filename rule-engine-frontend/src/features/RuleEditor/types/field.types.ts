@@ -1,10 +1,20 @@
+export type FieldType = 'STRING' | 'NUMBER' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'ENUM';
+
 export interface FieldPayload {
   name: string;
-  description?: string;
-  type?: 'string' | 'number' | 'boolean';
+  label: string;
+  type: FieldType;
+  required: boolean;
+  allowedValues?: string[];
 }
 
-export interface FieldResponse extends FieldPayload {
+export interface FieldResponse {
   id: string;
+  name: string;
+  label: string;
+  type: FieldType;
+  required: boolean;
+  allowedValues: string[];
   createdAt: string;
+  updatedAt: string;
 }

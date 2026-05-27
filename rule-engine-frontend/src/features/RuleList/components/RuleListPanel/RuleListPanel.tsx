@@ -3,12 +3,16 @@ import { useRuleListLogic } from '../../hooks/useRuleListLogic';
 import { Button, Input, Switch, Skeleton, Card } from '../../../../shared/components';
 import { Trash2, Copy, Play, Tag, Clock } from 'lucide-react';
 
-export function RuleListPanel() {
+interface RuleListPanelProps {
+  selectedRuleId: string | null;
+  setSelectedRuleId: (id: string | null) => void;
+}
+
+export function RuleListPanel({ selectedRuleId, setSelectedRuleId }: RuleListPanelProps) {
   const { 
     rules, isLoading, isError, 
-    handleDelete, handleToggle, handleClone,
-    selectedRuleId, setSelectedRuleId 
-  } = useRuleListLogic();
+    handleDelete, handleToggle, handleClone
+  } = useRuleListLogic(selectedRuleId, setSelectedRuleId);
   
   const [searchInput, setSearchInput] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');

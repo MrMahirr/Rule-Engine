@@ -7,7 +7,8 @@ export interface ApiResponse<T> {
 export interface ApiError {
   message: string;
   statusCode: number;
-  details?: Record<string, string[]>;
+  details?: Record<string, unknown>;
+  timestamp?: string;
 }
 
 export interface PaginatedResponse<T> {

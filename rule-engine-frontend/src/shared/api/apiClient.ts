@@ -1,8 +1,9 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import { ApiError } from './types';
 
-// Ortam değişkeninden baseURL okuma
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3500';
+// Development: Vite proxy (/api → localhost:3500) kullanılır, baseURL boş kalır.
+// Production: VITE_API_BASE_URL env variable ile gerçek backend URL'i set edilir.
+const baseURL = import.meta.env.VITE_API_BASE_URL || '';
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL,

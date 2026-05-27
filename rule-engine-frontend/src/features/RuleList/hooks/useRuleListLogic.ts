@@ -5,15 +5,16 @@ import { useToast } from '../../../shared/components';
 import { useConfirm } from '../../../shared/hooks';
 import { RuleResponse } from '../../RuleEditor/types/ast.types';
 
-export function useRuleListLogic() {
+export function useRuleListLogic(
+  selectedRuleId: string | null,
+  setSelectedRuleId: (id: string | null) => void
+) {
   const [filters, setFilters] = useState<RuleFilters>({
     page: 1,
     pageSize: 10,
     sortOrder: 'desc',
     sortBy: 'createdAt'
   });
-  
-  const [selectedRuleId, setSelectedRuleId] = useState<string | null>(null);
 
   const { data, isLoading, isError, error } = useRulesQuery(filters);
   const deleteMutation = useDeleteRuleMutation();

@@ -5,12 +5,14 @@ import java.util.UUID;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,6 +25,7 @@ import com.ruleengine.ruleengine.rule.api.dto.RuleEvaluationRequest;
 import com.ruleengine.ruleengine.rule.api.dto.RuleEvaluationResponse;
 import com.ruleengine.ruleengine.rule.api.dto.RuleResponse;
 import com.ruleengine.ruleengine.rule.api.dto.RuleToggleRequest;
+import com.ruleengine.ruleengine.rule.api.dto.RuleUpdateRequest;
 import com.ruleengine.ruleengine.rule.application.RuleCommandService;
 import com.ruleengine.ruleengine.rule.application.RuleExecutionService;
 import com.ruleengine.ruleengine.rule.application.RuleQueryService;
@@ -66,8 +69,13 @@ public class RuleController {
             @RequestParam(required = false) Boolean active,
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int pageSize) {
-        Pageable pageable = PageRequest.of(page, pageSize);
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int pageSize,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortOrder) {
+        Sort sort = "asc".equalsIgnoreCase(sortOrder)
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, pageSize, sort);
         return queryService.getRules(category, active, search, pageable);
     }
 
@@ -82,6 +90,14 @@ public class RuleController {
     public ResponseEntity<ApiResponse<Void>> deleteRule(@PathVariable UUID id) {
         commandService.deleteRule(id);
         return ResponseEntity.ok(ApiResponse.success("Rule deleted", null));
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update rule")
+    public ApiResponse<RuleResponse> updateRule(
+            @PathVariable UUID id,
+            @Valid @RequestBody RuleUpdateRequest request) {
+        return ApiResponse.success("Rule updated", commandService.updateRule(id, request));
     }
 
     @PatchMapping("/{id}/toggle")

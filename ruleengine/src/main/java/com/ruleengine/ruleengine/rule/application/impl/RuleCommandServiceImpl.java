@@ -12,6 +12,7 @@ import com.ruleengine.ruleengine.field.infrastructure.FieldDefinitionRepository;
 import com.ruleengine.ruleengine.rule.api.dto.RuleCreateRequest;
 import com.ruleengine.ruleengine.rule.api.dto.RuleResponse;
 import com.ruleengine.ruleengine.rule.api.dto.RuleToggleRequest;
+import com.ruleengine.ruleengine.rule.api.dto.RuleUpdateRequest;
 import com.ruleengine.ruleengine.rule.application.RuleCommandService;
 import com.ruleengine.ruleengine.rule.infrastructure.cache.RuleCacheKeys;
 import com.ruleengine.ruleengine.rule.infrastructure.mapper.RuleMapper;
@@ -57,6 +58,33 @@ public class RuleCommandServiceImpl implements RuleCommandService {
         }
 
         RuleDefinitionEntity saved = ruleRepository.save(ruleMapper.toEntity(request));
+        return ruleMapper.toResponse(saved);
+    }
+
+    @Override
+    @CacheEvict(cacheNames = {RuleCacheKeys.ACTIVE_RULES, RuleCacheKeys.RULE_BY_ID}, allEntries = true)
+    public RuleResponse updateRule(UUID id, RuleUpdateRequest request) {
+        RuleDefinitionEntity entity = getEntity(id);
+
+        astValidator.validate(request.ast());
+        astValidator.validateActions(request.actions());
+        fieldValidator.validateAstFields(request.ast(), fieldRepository.findAll().stream()
+                .map(field -> field.getName())
+                .toList());
+
+        if (!entity.getName().equalsIgnoreCase(request.name()) && ruleRepository.existsByNameIgnoreCase(request.name())) {
+            throw new RuleValidationException("Rule name already exists");
+        }
+
+        entity.setName(request.name());
+        entity.setDescription(request.description());
+        entity.setCategory(request.category());
+        entity.setPriority(request.priority());
+        entity.setActive(Boolean.TRUE.equals(request.isActive()));
+        entity.setAst(ruleMapper.toAstMap(request.ast()));
+        entity.setActions(ruleMapper.toActionMaps(request.actions()));
+
+        RuleDefinitionEntity saved = ruleRepository.save(entity);
         return ruleMapper.toResponse(saved);
     }
 

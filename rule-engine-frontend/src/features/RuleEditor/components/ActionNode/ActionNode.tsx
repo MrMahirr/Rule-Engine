@@ -58,6 +58,18 @@ export function ActionNode({ id, data, selected }: NodeProps<ActionFlowNode>) {
             <option value="CUSTOM">Özel Aksiyon</option>
           </select>
         </div>
+
+        {data.actionType === 'CUSTOM' && (
+          <div className="flex flex-col gap-1.5 mt-2">
+            <label className="text-xs font-medium text-text-secondary uppercase">Özel Aksiyon Detayı</label>
+            <input 
+              className="w-full bg-space-900 border border-border-subtle rounded text-text-primary text-sm p-2 outline-none focus:border-red-400"
+              value={data.params?.customActionPayload || ''}
+              onChange={(e) => updateData({ params: { ...(data.params || {}), customActionPayload: e.target.value } })}
+              placeholder="Örn: webhookTetikle, bakiyeDus..."
+            />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -32,7 +32,19 @@ export interface RulePayload {
 
 export interface RuleResponse extends RulePayload {
   id: string;
-  category?: string;
+  version: number;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface RuleMatchResult {
+  ruleId: string;
+  ruleName: string;
+  actions: ASTActionNode[];
+}
+
+export interface RuleEvaluationResponse {
+  matched: boolean;
+  matchedRules: RuleMatchResult[];
+  evaluatedRuleCount: number;
 }

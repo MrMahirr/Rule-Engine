@@ -18,11 +18,13 @@ import { useRuleValidation } from '../../hooks/useRuleValidation';
 import { useRuleImportExport } from '../../hooks/useRuleImportExport';
 import { useAutoLayout } from '../../hooks/useAutoLayout';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
-import { useSaveRuleMutation } from '../../services/useRuleQueries';
+import { useSaveRuleMutation, useUpdateRuleMutation, useRuleByIdQuery } from '../../services/useRuleQueries';
+import { useASTParser } from '../../hooks/useASTParser';
 import { Button, Modal, Input, useToast } from '../../../../shared/components';
 import { FieldManagementModal } from '../FieldManagementModal/FieldManagementModal';
+import { useConfirm } from '../../../../shared/hooks';
 import { RuleSimulator } from '../RuleSimulator/RuleSimulator';
-import { LayoutDashboard, Play, Settings, Undo as UndoIcon, Redo as RedoIcon, Download, Upload, Save } from 'lucide-react';
+import { LayoutDashboard, Play, Settings, Undo as UndoIcon, Redo as RedoIcon, Download, Upload, Save, FilePlus } from 'lucide-react';
 import { RuleEngineContext } from '../../contexts/RuleEngineContext';
 
 const nodeTypes = {
@@ -31,14 +33,18 @@ const nodeTypes = {
   action: ActionNode,
 };
 
-function RuleCanvasInternal() {
+function RuleCanvasInternal({ selectedRuleId, setSelectedRuleId }: { selectedRuleId: string | null, setSelectedRuleId: (id: string | null) => void }) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   
   const { nodes, edges, onNodesChange, onEdgesChange, onConnect, setNodes, setEdges, updateNodeData, toAST, takeSnapshot, undo, redo, canUndo, canRedo, copySelection, pasteSelection } = useRuleEngine();
   const { onDragOver, onDrop } = useNodeDragAndDrop(setNodes, updateNodeData, takeSnapshot);
   const { validateRule } = useRuleValidation();
   const saveMutation = useSaveRuleMutation();
+  const updateMutation = useUpdateRuleMutation();
+  const { data: ruleData, isLoading: isLoadingRule } = useRuleByIdQuery(selectedRuleId || '');
+  const { parseAST } = useASTParser();
   const { success, error } = useToast();
+  const { confirm } = useConfirm();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFieldModalOpen, setIsFieldModalOpen] = useState(false);
@@ -48,10 +54,36 @@ function RuleCanvasInternal() {
   const [ruleCategory, setRuleCategory] = useState('');
   const [rulePriority, setRulePriority] = useState<number>(1);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [needsLayout, setNeedsLayout] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { exportRule, importRule } = useRuleImportExport(setNodes, setEdges, setRuleName, setRuleDesc);
   const { autoLayout } = useAutoLayout(nodes, edges, setNodes, takeSnapshot);
+
+  React.useEffect(() => {
+    if (selectedRuleId && ruleData?.data) {
+      const rule = ruleData.data;
+      setRuleName(rule.name);
+      setRuleDesc(rule.description || '');
+      setRuleCategory(rule.category || 'Genel');
+      setRulePriority(rule.priority || 1);
+      
+      const { nodes: newNodes, edges: newEdges } = parseAST(rule.ast, rule.actions || [], updateNodeData);
+      
+      setNodes(newNodes);
+      setEdges(newEdges);
+      setValidationErrors([]);
+      takeSnapshot();
+      setNeedsLayout(true);
+    }
+  }, [selectedRuleId, ruleData, parseAST, setNodes, setEdges, updateNodeData]);
+
+  React.useEffect(() => {
+    if (needsLayout && nodes.length > 0) {
+      autoLayout();
+      setNeedsLayout(false);
+    }
+  }, [needsLayout, nodes, autoLayout]);
 
   const handleExportClick = () => {
     const { ast, actions } = toAST();
@@ -67,6 +99,28 @@ function RuleCanvasInternal() {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  const handleNewRule = async () => {
+    if (nodes.length > 0 || edges.length > 0) {
+      const isConfirmed = await confirm({
+        title: 'Yeni Kural Oluştur',
+        message: 'Mevcut tuvaldeki tüm düğümler temizlenecek. Devam etmek istiyor musunuz?',
+        confirmText: 'Evet, Temizle',
+        isDestructive: true
+      });
+      if (!isConfirmed) return;
+    }
+    
+    setSelectedRuleId(null);
+    setNodes([]);
+    setEdges([]);
+    setRuleName('');
+    setRuleDesc('');
+    setRuleCategory('');
+    setRulePriority(1);
+    setValidationErrors([]);
+    takeSnapshot();
   };
 
   const handleSaveClick = () => {
@@ -89,8 +143,19 @@ function RuleCanvasInternal() {
 
   const submitSave = async () => {
     const { ast, actions } = toAST();
+
+    if (!ast) {
+      error('Hata', 'En az bir koşul eklemelisiniz.');
+      return;
+    }
+
+    if (actions.length === 0) {
+      error('Hata', 'En az bir aksiyon eklemelisiniz.');
+      return;
+    }
+
     try {
-      await saveMutation.mutateAsync({
+      const payload = {
         name: ruleName || 'İsimsiz Kural',
         description: ruleDesc,
         category: ruleCategory || 'Genel',
@@ -98,13 +163,16 @@ function RuleCanvasInternal() {
         isActive: true,
         ast,
         actions
-      });
+      };
+
+      if (selectedRuleId) {
+        await updateMutation.mutateAsync({ id: selectedRuleId, payload });
+        success('Kural Güncellendi', 'Kural başarıyla güncellendi.');
+      } else {
+        await saveMutation.mutateAsync(payload);
+        success('Kural Kaydedildi', 'Kural başarıyla veritabanına kaydedildi.');
+      }
       setIsModalOpen(false);
-      setRuleName('');
-      setRuleDesc('');
-      setRuleCategory('');
-      setRulePriority(1);
-      success('Kural Kaydedildi', 'Kural başarıyla veritabanına kaydedildi.');
     } catch (err) {
       console.error('Save failed', err);
       error('Kayıt Başarısız', 'Kural kaydedilirken bir sorun oluştu.');
@@ -129,9 +197,10 @@ function RuleCanvasInternal() {
           className="hidden" 
           onChange={handleImportChange} 
         />
+        <Button onClick={handleNewRule} variant="secondary" size="sm"><FilePlus size={12} /> Yeni Kural</Button>
         <Button onClick={() => fileInputRef.current?.click()} variant="secondary" size="sm"><Upload size={12} /> İçe Aktar</Button>
         <Button onClick={handleExportClick} variant="secondary" size="sm"><Download size={12} /> Dışa Aktar</Button>
-        <Button onClick={handleSaveClick} variant="primary" size="sm"><Save size={12} /> Kuralı Kaydet</Button>
+        <Button onClick={handleSaveClick} variant="primary" size="sm"><Save size={12} /> {selectedRuleId ? 'Kuralı Güncelle' : 'Kuralı Kaydet'}</Button>
       </div>
 
       {validationErrors.length > 0 && (
@@ -226,10 +295,10 @@ function RuleCanvasInternal() {
   );
 }
 
-export function RuleCanvas() {
+export function RuleCanvas({ selectedRuleId, setSelectedRuleId }: { selectedRuleId: string | null, setSelectedRuleId: (id: string | null) => void }) {
   return (
     <ReactFlowProvider>
-      <RuleCanvasInternal />
+      <RuleCanvasInternal selectedRuleId={selectedRuleId} setSelectedRuleId={setSelectedRuleId} />
     </ReactFlowProvider>
   );
 }
