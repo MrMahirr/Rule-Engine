@@ -17,4 +17,6 @@ public interface RuleDefinitionRepository extends JpaRepository<RuleDefinitionEn
     Optional<RuleDefinitionEntity> findByIdAndActiveTrue(UUID id);
 
     boolean existsByNameIgnoreCase(String name);
+    
+    java.util.List<RuleDefinitionEntity> findByActiveTrue();
 }

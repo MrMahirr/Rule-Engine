@@ -71,6 +71,8 @@ public class RuleExecutionServiceImpl implements RuleExecutionService {
         java.util.List<com.ruleengine.ruleengine.rule.api.dto.RuleBatchEvaluationResponse.BatchResultDto> results = new java.util.ArrayList<>();
         long matchedRecords = 0;
         
+        long startTime = System.currentTimeMillis();
+
         for (java.util.Map<String, Object> fact : request.factsList()) {
             EvaluationContext context = new EvaluationContext(fact);
             boolean matched = ruleEvaluator.evaluate(rule.ast(), context).matched();
@@ -82,6 +84,9 @@ public class RuleExecutionServiceImpl implements RuleExecutionService {
             
             results.add(new com.ruleengine.ruleengine.rule.api.dto.RuleBatchEvaluationResponse.BatchResultDto(fact, matched, matches));
         }
+        
+        long executionTimeMs = System.currentTimeMillis() - startTime;
+        executionLogger.logBatchExecution(rule.id(), results, executionTimeMs / Math.max(1, results.size()));
         
         long failedRecords = request.factsList().size() - matchedRecords;
         return new com.ruleengine.ruleengine.rule.api.dto.RuleBatchEvaluationResponse(

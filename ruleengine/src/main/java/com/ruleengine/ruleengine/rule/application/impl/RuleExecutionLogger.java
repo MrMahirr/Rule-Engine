@@ -28,6 +28,37 @@ public class RuleExecutionLogger {
 
     @Async
     @Transactional
+    public void logExecutions(java.util.List<RuleExecutionLogEntity> logs) {
+        logRepository.saveAll(logs);
+    }
+
+    @Async
+    @Transactional
+    public void logBatchExecution(UUID ruleId, java.util.List<com.ruleengine.ruleengine.rule.api.dto.RuleBatchEvaluationResponse.BatchResultDto> results, long executionTimeMs) {
+        java.util.List<RuleExecutionLogEntity> logs = new java.util.ArrayList<>();
+        for (com.ruleengine.ruleengine.rule.api.dto.RuleBatchEvaluationResponse.BatchResultDto result : results) {
+            try {
+                RuleExecutionLogEntity log = new RuleExecutionLogEntity();
+                log.setRuleId(ruleId);
+                log.setExecutionTimeMs(executionTimeMs);
+                log.setFactPayload(objectMapper.writeValueAsString(result.fact()));
+                
+                RuleEvaluationResponse mockRes = new RuleEvaluationResponse(result.matched(), result.matches(), 1);
+                log.setResult(objectMapper.writeValueAsString(mockRes));
+                log.setMatched(result.matched());
+                log.setCreatedAt(LocalDateTime.now());
+                logs.add(log);
+            } catch (JacksonException e) {
+                // Ignore serialization error for this row
+            }
+        }
+        if (!logs.isEmpty()) {
+            logRepository.saveAll(logs);
+        }
+    }
+
+    @Async
+    @Transactional
     public void logExecution(RuleEvaluationRequest request, RuleEvaluationResponse response, long executionTimeMs) {
         try {
             RuleExecutionLogEntity log = new RuleExecutionLogEntity();

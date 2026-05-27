@@ -50,6 +50,8 @@ export interface RuleResponse extends RulePayload {
   version: number;
   createdAt: string;
   updatedAt: string;
+  hasConflicts?: boolean;
+  conflictDetails?: string[];
 }
 
 export interface RuleMatchResult {

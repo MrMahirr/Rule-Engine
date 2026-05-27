@@ -47,7 +47,7 @@ export default function App() {
           <RuleListPanel selectedRuleId={selectedRuleId} setSelectedRuleId={setSelectedRuleId} />
         </main>
       ) : (
-        <main className="flex flex-col h-[calc(100vh-73px)] overflow-hidden relative">
+        <main className="h-[calc(100vh-73px)] overflow-y-auto bg-surface-primary">
           <Dashboard />
         </main>
       )}

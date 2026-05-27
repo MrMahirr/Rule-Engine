@@ -4,7 +4,7 @@ import { evaluateAST } from '../../utils/ruleEvaluator';
 import { useConflictDetection } from '../../hooks/useConflictDetection';
 import { Play, FileSpreadsheet, UploadCloud } from 'lucide-react';
 import { Button } from '../../../../shared/components';
-import { useBatchEvaluateMutation } from '../../services/useRuleQueries';
+import { useBatchEvaluateMutation, useEvaluateRuleMutation } from '../../services/useRuleQueries';
 import Papa from 'papaparse';
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
 
@@ -32,13 +32,29 @@ export function RuleSimulator({ isOpen, onClose, ast, actions, ruleId }: RuleSim
   const conflicts = useConflictDetection(ast, actions);
   const batchMutation = useBatchEvaluateMutation();
 
-  const handleSingleTest = () => {
+  const evaluateMutation = useEvaluateRuleMutation();
+
+  const handleSingleTest = async () => {
     try {
       const parsedData = JSON.parse(jsonInput);
       if (!ast) {
         setResult({ matched: false, error: 'Ağaç (AST) boş. Lütfen önce geçerli bir kural çizin.' });
         return;
       }
+      
+      // Eğer kural kaydedilmişse, backend üzerinden test et (Böylece Audit Log oluşur)
+      if (ruleId) {
+        try {
+          const res = await evaluateMutation.mutateAsync({ ruleId, facts: parsedData });
+          setResult({ matched: res.data.matched });
+          return;
+        } catch (err) {
+          setResult({ matched: false, error: 'Sunucu tarafında değerlendirme başarısız oldu.' });
+          return;
+        }
+      }
+
+      // Kural kaydedilmemişse yerel simülatör ile test et (Log oluşmaz)
       const isMatched = evaluateAST(ast, parsedData);
       setResult({ matched: isMatched });
     } catch (e) {

@@ -32,6 +32,10 @@ public class RuleMapper {
     }
 
     public RuleResponse toResponse(RuleDefinitionEntity entity) {
+        return toResponse(entity, false, List.of());
+    }
+
+    public RuleResponse toResponse(RuleDefinitionEntity entity, boolean hasConflicts, List<String> conflictDetails) {
         return new RuleResponse(
                 entity.getId(),
                 entity.getName(),
@@ -43,7 +47,9 @@ public class RuleMapper {
                 toActionDtos(entity.getActions()),
                 entity.getVersion(),
                 entity.getCreatedAt(),
-                entity.getUpdatedAt());
+                entity.getUpdatedAt(),
+                hasConflicts,
+                conflictDetails);
     }
 
     public Map<String, Object> toAstMap(AstNodeDto ast) {

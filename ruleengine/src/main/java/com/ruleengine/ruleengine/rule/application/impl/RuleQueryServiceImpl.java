@@ -20,6 +20,10 @@ import com.ruleengine.ruleengine.rule.infrastructure.persistence.RuleDefinitionR
 import com.ruleengine.ruleengine.rule.infrastructure.persistence.RuleDefinitionSpecification;
 import com.ruleengine.ruleengine.rule.infrastructure.persistence.RuleVersionRepository;
 
+import java.util.stream.Collectors;
+import com.ruleengine.ruleengine.rule.infrastructure.persistence.RuleConflictEntity;
+import com.ruleengine.ruleengine.rule.infrastructure.persistence.RuleConflictRepository;
+
 @Service
 @Transactional(readOnly = true)
 public class RuleQueryServiceImpl implements RuleQueryService {
@@ -30,19 +34,32 @@ public class RuleQueryServiceImpl implements RuleQueryService {
 
     private final RuleDefinitionRepository ruleRepository;
     private final RuleVersionRepository versionRepository;
+    private final RuleConflictRepository conflictRepository;
     private final RuleMapper ruleMapper;
 
-    public RuleQueryServiceImpl(RuleDefinitionRepository ruleRepository, RuleVersionRepository versionRepository, RuleMapper ruleMapper) {
+    public RuleQueryServiceImpl(
+            RuleDefinitionRepository ruleRepository, 
+            RuleVersionRepository versionRepository, 
+            RuleConflictRepository conflictRepository,
+            RuleMapper ruleMapper) {
         this.ruleRepository = ruleRepository;
         this.versionRepository = versionRepository;
+        this.conflictRepository = conflictRepository;
         this.ruleMapper = ruleMapper;
     }
 
     @Override
     public RuleResponse getRule(UUID id) {
-        return ruleRepository.findById(id)
-                .map(ruleMapper::toResponse)
+        RuleDefinitionEntity rule = ruleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Rule", id));
+                
+        java.util.List<RuleConflictEntity> conflicts = conflictRepository.findByRuleId1(id);
+        boolean hasConflicts = !conflicts.isEmpty();
+        java.util.List<String> conflictDetails = conflicts.stream()
+                .map(RuleConflictEntity::getDescription)
+                .collect(Collectors.toList());
+
+        return ruleMapper.toResponse(rule, hasConflicts, conflictDetails);
     }
 
     @Override
@@ -53,7 +70,14 @@ public class RuleQueryServiceImpl implements RuleQueryService {
                 .and(RuleDefinitionSpecification.nameContains(search));
 
         Page<RuleResponse> page = ruleRepository.findAll(specification, ensureSorting(pageable))
-                .map(ruleMapper::toResponse);
+                .map(rule -> {
+                    java.util.List<RuleConflictEntity> conflicts = conflictRepository.findByRuleId1(rule.getId());
+                    boolean hasConflicts = !conflicts.isEmpty();
+                    java.util.List<String> conflictDetails = conflicts.stream()
+                            .map(RuleConflictEntity::getDescription)
+                            .collect(Collectors.toList());
+                    return ruleMapper.toResponse(rule, hasConflicts, conflictDetails);
+                });
         return PaginatedResponse.from(page);
     }
 

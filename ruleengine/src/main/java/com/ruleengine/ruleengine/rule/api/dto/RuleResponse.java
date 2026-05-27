@@ -15,9 +15,12 @@ public record RuleResponse(
         List<ActionNodeDto> actions,
         long version,
         Instant createdAt,
-        Instant updatedAt) {
+        Instant updatedAt,
+        boolean hasConflicts,
+        List<String> conflictDetails) {
 
     public RuleResponse {
         actions = actions == null ? List.of() : List.copyOf(actions);
+        conflictDetails = conflictDetails == null ? List.of() : List.copyOf(conflictDetails);
     }
 }

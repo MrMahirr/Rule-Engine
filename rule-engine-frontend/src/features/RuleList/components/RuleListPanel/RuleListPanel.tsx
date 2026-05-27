@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useRuleListLogic } from '../../hooks/useRuleListLogic';
 import { Button, Input, Switch, Skeleton, Card } from '../../../../shared/components';
-import { Trash2, Copy, Play, Tag, Clock } from 'lucide-react';
+import { Trash2, Copy, Play, Tag, Clock, AlertTriangle } from 'lucide-react';
 
 interface RuleListPanelProps {
   selectedRuleId: string | null;
@@ -95,13 +95,18 @@ export function RuleListPanel({ selectedRuleId, setSelectedRuleId }: RuleListPan
                 {catRules.map(rule => (
                   <Card 
                     key={rule.id} 
-                    className={`p-3 bg-space-900 border ${rule.isActive === false ? 'border-border-subtle opacity-70' : selectedRuleId === rule.id ? 'border-neon-blue shadow-[0_0_10px_rgba(14,165,233,0.2)]' : 'border-border-subtle hover:border-neon-blue/50'} transition-all cursor-pointer`}
+                    className={`p-3 bg-space-900 border ${rule.hasConflicts ? 'border-yellow-500/50 shadow-[0_0_10px_rgba(234,179,8,0.1)]' : ''} ${rule.isActive === false ? 'border-border-subtle opacity-70' : selectedRuleId === rule.id ? 'border-neon-blue shadow-[0_0_10px_rgba(14,165,233,0.2)]' : 'border-border-subtle hover:border-neon-blue/50'} transition-all cursor-pointer`}
                     onClick={() => setSelectedRuleId(rule.id)}
                   >
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h4 className="m-0 text-sm font-semibold text-text-primary truncate max-w-[150px]" title={rule.name}>{rule.name}</h4>
+                          {rule.hasConflicts && (
+                            <div title={rule.conflictDetails?.join('\n')} className="text-yellow-500 bg-yellow-500/10 p-1 rounded-full cursor-help">
+                              <AlertTriangle size={14} />
+                            </div>
+                          )}
                           {rule.priority && <span className="text-[10px] bg-neon-blue/10 text-neon-blue border border-neon-blue/20 px-1.5 py-0.5 rounded">P{rule.priority}</span>}
                           {rule.isActive === false && <span className="text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-1.5 py-0.5 rounded">Pasif</span>}
                         </div>

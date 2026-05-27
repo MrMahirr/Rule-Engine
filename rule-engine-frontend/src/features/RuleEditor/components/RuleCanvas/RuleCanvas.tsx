@@ -245,19 +245,19 @@ function RuleCanvasInternal({ selectedRuleId, setSelectedRuleId }: { selectedRul
         deleteKeyCode={['Backspace', 'Delete']}
         fitView
       >
-        <Background variant={BackgroundVariant.Dots} gap={12} size={1} color="rgba(255, 255, 255, 0.1)" />
+        <Background variant={BackgroundVariant.Dots} gap={12} size={1} color="var(--color-text-muted)" />
         <Controls className="rule-canvas-controls" />
         <MiniMap 
           nodeColor={(node) => {
             switch (node.type) {
-              case 'condition': return '#00d4ff';
-              case 'logic_gate': return '#a855f7';
-              case 'action': return '#22d3ee';
-              default: return '#eee';
+              case 'condition': return 'var(--color-neon-blue)';
+              case 'logic_gate': return 'var(--color-neon-purple)';
+              case 'action': return 'var(--color-neon-cyan)';
+              default: return 'var(--color-text-primary)';
             }
           }}
-          maskColor="rgba(6, 6, 15, 0.7)"
-          style={{ backgroundColor: '#161633' }}
+          maskColor="color-mix(in srgb, var(--color-space-900) 70%, transparent)"
+          style={{ backgroundColor: 'var(--color-surface-secondary)' }}
         />
         </ReactFlow>
       </RuleEngineContext.Provider>

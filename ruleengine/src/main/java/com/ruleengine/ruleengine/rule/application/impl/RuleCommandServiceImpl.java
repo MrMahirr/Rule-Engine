@@ -31,6 +31,7 @@ public class RuleCommandServiceImpl implements RuleCommandService {
     private final RuleDefinitionRepository ruleRepository;
     private final FieldDefinitionRepository fieldRepository;
     private final RuleVersionRepository versionRepository;
+    private final RuleConflictAnalyzer conflictAnalyzer;
     private final RuleMapper ruleMapper;
     private final RuleAstValidator astValidator;
     private final RuleFieldValidator fieldValidator;
@@ -39,12 +40,14 @@ public class RuleCommandServiceImpl implements RuleCommandService {
             RuleDefinitionRepository ruleRepository,
             FieldDefinitionRepository fieldRepository,
             RuleVersionRepository versionRepository,
+            RuleConflictAnalyzer conflictAnalyzer,
             RuleMapper ruleMapper,
             RuleAstValidator astValidator,
             RuleFieldValidator fieldValidator) {
         this.ruleRepository = ruleRepository;
         this.fieldRepository = fieldRepository;
         this.versionRepository = versionRepository;
+        this.conflictAnalyzer = conflictAnalyzer;
         this.ruleMapper = ruleMapper;
         this.astValidator = astValidator;
         this.fieldValidator = fieldValidator;
@@ -65,6 +68,7 @@ public class RuleCommandServiceImpl implements RuleCommandService {
 
         RuleDefinitionEntity saved = ruleRepository.save(ruleMapper.toEntity(request));
         saveVersion(saved);
+        conflictAnalyzer.analyzeAndSaveConflicts(saved.getId());
         
         return ruleMapper.toResponse(saved);
     }
@@ -94,6 +98,7 @@ public class RuleCommandServiceImpl implements RuleCommandService {
 
         RuleDefinitionEntity saved = ruleRepository.save(entity);
         saveVersion(saved);
+        conflictAnalyzer.analyzeAndSaveConflicts(saved.getId());
         
         return ruleMapper.toResponse(saved);
     }
@@ -103,7 +108,9 @@ public class RuleCommandServiceImpl implements RuleCommandService {
     public RuleResponse toggleRule(UUID id, RuleToggleRequest request) {
         RuleDefinitionEntity entity = getEntity(id);
         entity.setActive(Boolean.TRUE.equals(request.isActive()));
-        return ruleMapper.toResponse(entity);
+        RuleDefinitionEntity saved = ruleRepository.save(entity);
+        conflictAnalyzer.analyzeAndSaveConflicts(saved.getId());
+        return ruleMapper.toResponse(saved);
     }
 
     @Override
@@ -125,6 +132,7 @@ public class RuleCommandServiceImpl implements RuleCommandService {
         
         RuleDefinitionEntity saved = ruleRepository.save(entity);
         saveVersion(saved);
+        conflictAnalyzer.analyzeAndSaveConflicts(saved.getId());
         
         return ruleMapper.toResponse(saved);
     }
