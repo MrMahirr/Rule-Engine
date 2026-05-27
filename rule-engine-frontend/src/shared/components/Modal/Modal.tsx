@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import './Modal.css';
+import { X } from 'lucide-react';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -44,34 +44,27 @@ export const Modal: React.FC<ModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-      onClose();
-    }
-  };
-
   return createPortal(
-    <div className="modal-backdrop" onClick={handleBackdropClick}>
+    <div className="modal-overlay" onClick={onClose}>
       <div 
-        className="rule-engine-modal" 
+        className="modal-content" 
         ref={modalRef}
         style={{ width, maxWidth: '90vw' }}
+        onClick={e => e.stopPropagation()}
       >
         {title && (
-          <div className="modal-header">
-            <h3>{title}</h3>
-            <button className="modal-close-btn" onClick={onClose} aria-label="Close">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+          <div className="flex items-center justify-between p-4 border-b border-border-subtle bg-surface-secondary">
+            <h3 className="text-lg font-semibold text-text-primary m-0">{title}</h3>
+            <button className="btn-icon" onClick={onClose} aria-label="Close">
+              <X size={20} />
             </button>
           </div>
         )}
-        <div className="modal-content">
+        <div className="p-4 overflow-y-auto">
           {children}
         </div>
         {footer && (
-          <div className="modal-footer">
+          <div className="p-4 border-t border-border-subtle bg-surface-secondary flex justify-end gap-2">
             {footer}
           </div>
         )}

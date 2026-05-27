@@ -22,7 +22,8 @@ import { useSaveRuleMutation } from '../../services/useRuleQueries';
 import { Button, Modal, Input, useToast } from '../../../../shared/components';
 import { FieldManagementModal } from '../FieldManagementModal/FieldManagementModal';
 import { RuleSimulator } from '../RuleSimulator/RuleSimulator';
-import './RuleCanvas.css';
+import { LayoutDashboard, Play, Settings, Undo as UndoIcon, Redo as RedoIcon, Download, Upload, Save } from 'lucide-react';
+import { RuleEngineContext } from '../../contexts/RuleEngineContext';
 
 const nodeTypes = {
   condition: ConditionNode,
@@ -33,7 +34,7 @@ const nodeTypes = {
 function RuleCanvasInternal() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, setNodes, setEdges, updateNodeData, toAST, takeSnapshot, undo, redo, canUndo, canRedo } = useRuleEngine();
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, setNodes, setEdges, updateNodeData, toAST, takeSnapshot, undo, redo, canUndo, canRedo, copySelection, pasteSelection } = useRuleEngine();
   const { onDragOver, onDrop } = useNodeDragAndDrop(setNodes, updateNodeData, takeSnapshot);
   const { validateRule } = useRuleValidation();
   const saveMutation = useSaveRuleMutation();
@@ -45,6 +46,7 @@ function RuleCanvasInternal() {
   const [ruleName, setRuleName] = useState('');
   const [ruleDesc, setRuleDesc] = useState('');
   const [ruleCategory, setRuleCategory] = useState('');
+  const [rulePriority, setRulePriority] = useState<number>(1);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -80,7 +82,9 @@ function RuleCanvasInternal() {
   useKeyboardShortcuts({
     onSave: handleSaveClick,
     onUndo: undo,
-    onRedo: redo
+    onRedo: redo,
+    onCopy: copySelection,
+    onPaste: pasteSelection
   });
 
   const submitSave = async () => {
@@ -90,6 +94,7 @@ function RuleCanvasInternal() {
         name: ruleName || 'İsimsiz Kural',
         description: ruleDesc,
         category: ruleCategory || 'Genel',
+        priority: rulePriority,
         isActive: true,
         ast,
         actions
@@ -98,6 +103,7 @@ function RuleCanvasInternal() {
       setRuleName('');
       setRuleDesc('');
       setRuleCategory('');
+      setRulePriority(1);
       success('Kural Kaydedildi', 'Kural başarıyla veritabanına kaydedildi.');
     } catch (err) {
       console.error('Save failed', err);
@@ -106,30 +112,30 @@ function RuleCanvasInternal() {
   };
 
   return (
-    <div className="rule-canvas-wrapper" ref={reactFlowWrapper}>
-      <div className="canvas-toolbar">
-        <Button onClick={autoLayout} variant="secondary" style={{ marginRight: '0.5rem' }}>Düzenle (Auto-Layout)</Button>
-        <Button onClick={() => setIsSimulatorOpen(true)} variant="secondary" style={{ marginRight: '0.5rem' }}>Simülasyon</Button>
-        <Button onClick={() => setIsFieldModalOpen(true)} variant="secondary">Alanları Yönet</Button>
-        <div style={{ flex: 1 }}></div>
-        <div style={{ display: 'flex', gap: '0.5rem', marginRight: '1rem', borderRight: '1px solid var(--color-border-subtle)', paddingRight: '1rem' }}>
-          <Button onClick={undo} variant="ghost" disabled={!canUndo} title="Geri Al (Ctrl+Z)">Geri Al</Button>
-          <Button onClick={redo} variant="ghost" disabled={!canRedo} title="Yinele (Ctrl+Y)">Yinele</Button>
+    <div className="flex-1 min-h-[500px] lg:h-full w-full shrink-0 lg:shrink relative bg-space-900" ref={reactFlowWrapper}>
+      <div className="absolute top-4 right-4 z-10 flex flex-wrap gap-2 w-[calc(100%-2rem)] justify-end">
+        <Button onClick={autoLayout} variant="secondary" size="sm"><LayoutDashboard size={12} /> Düzenle</Button>
+        <Button onClick={() => setIsSimulatorOpen(true)} variant="secondary" size="sm"><Play size={12} /> Simülasyon</Button>
+        <Button onClick={() => setIsFieldModalOpen(true)} variant="secondary" size="sm"><Settings size={12} /> Alanları Yönet</Button>
+        <div className="flex-1"></div>
+        <div className="flex gap-2 mr-4 border-r border-border-subtle pr-4">
+          <Button onClick={undo} variant="ghost" size="sm" disabled={!canUndo} title="Geri Al (Ctrl+Z)"><UndoIcon size={12} /> Geri Al</Button>
+          <Button onClick={redo} variant="ghost" size="sm" disabled={!canRedo} title="Yinele (Ctrl+Y)"><RedoIcon size={12} /> Yinele</Button>
         </div>
         <input 
           type="file" 
           accept=".json" 
           ref={fileInputRef} 
-          style={{ display: 'none' }} 
+          className="hidden" 
           onChange={handleImportChange} 
         />
-        <Button onClick={() => fileInputRef.current?.click()} variant="secondary">İçe Aktar</Button>
-        <Button onClick={handleExportClick} variant="secondary">Dışa Aktar</Button>
-        <Button onClick={handleSaveClick} variant="primary">Kuralı Kaydet</Button>
+        <Button onClick={() => fileInputRef.current?.click()} variant="secondary" size="sm"><Upload size={12} /> İçe Aktar</Button>
+        <Button onClick={handleExportClick} variant="secondary" size="sm"><Download size={12} /> Dışa Aktar</Button>
+        <Button onClick={handleSaveClick} variant="primary" size="sm"><Save size={12} /> Kuralı Kaydet</Button>
       </div>
 
       {validationErrors.length > 0 && (
-        <div className="validation-errors">
+        <div className="absolute top-16 right-4 z-10 bg-red-500/90 text-white p-4 rounded-lg text-sm max-w-[300px] flex flex-col gap-2 shadow-lg backdrop-blur-sm">
           {validationErrors.map((err, i) => <div key={i}>{err}</div>)}
         </div>
       )}
@@ -141,7 +147,8 @@ function RuleCanvasInternal() {
         actions={toAST().actions}
       />
 
-      <ReactFlow
+      <RuleEngineContext.Provider value={{ takeSnapshot }}>
+        <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
@@ -167,7 +174,8 @@ function RuleCanvasInternal() {
           maskColor="rgba(6, 6, 15, 0.7)"
           style={{ backgroundColor: '#161633' }}
         />
-      </ReactFlow>
+        </ReactFlow>
+      </RuleEngineContext.Provider>
 
       <Modal 
         isOpen={isModalOpen} 
@@ -193,6 +201,14 @@ function RuleCanvasInternal() {
             value={ruleCategory} 
             onChange={(e) => setRuleCategory(e.target.value)} 
             placeholder="Örn: Risk Kuralları, Kampanya" 
+            fullWidth 
+          />
+          <Input 
+            label="Öncelik Sırası (1-100)" 
+            type="number"
+            value={rulePriority.toString()} 
+            onChange={(e) => setRulePriority(Number(e.target.value))} 
+            placeholder="1" 
             fullWidth 
           />
           <Input 

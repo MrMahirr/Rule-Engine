@@ -1,5 +1,4 @@
 import React from 'react';
-import './Skeleton.css';
 
 interface SkeletonProps {
   width?: string | number;
@@ -13,8 +12,8 @@ export function Skeleton({ width = '100%', height = '20px', borderRadius = '4px'
   const elements = Array.from({ length: count }, (_, i) => (
     <div 
       key={i} 
-      className={`skeleton-loader ${className}`} 
-      style={{ width, height, borderRadius, marginBottom: count > 1 && i !== count - 1 ? '0.5rem' : 0 }}
+      className={`bg-surface-secondary animate-pulse ${className}`}
+      style={{ width, height, borderRadius, marginBottom: i !== count - 1 ? '0.5rem' : 0 }}
     />
   ));
 

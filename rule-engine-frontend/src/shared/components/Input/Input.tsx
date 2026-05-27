@@ -1,5 +1,4 @@
 import React, { forwardRef, InputHTMLAttributes } from 'react';
-import './Input.css';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -10,15 +9,15 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, fullWidth = false, className = '', ...props }, ref) => {
     return (
-      <div className={`rule-engine-input-wrapper ${fullWidth ? 'full-width' : ''} ${className}`}>
-        {label && <label className="input-label">{label}</label>}
-        <input 
-          ref={ref}
-          className={`rule-engine-input ${error ? 'has-error' : ''}`}
-          {...props}
-        />
-        {error && <span className="input-error">{error}</span>}
-      </div>
+    <div className={`flex flex-col gap-1 ${fullWidth ? 'w-full' : ''}`}>
+      {label && <label className="input-label">{label}</label>}
+      <input 
+        ref={ref}
+        className={`input-field ${error ? 'border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.2)]' : ''} ${className}`}
+        {...props} 
+      />
+      {error && <span className="text-red-400 text-xs mt-1">{error}</span>}
+    </div>
     );
   }
 );

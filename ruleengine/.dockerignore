@@ -1,0 +1,12 @@
+target/
+.git/
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.env
+docker-compose*.yml
+docker-compose*.yaml
+compose*.yml
+compose*.yaml

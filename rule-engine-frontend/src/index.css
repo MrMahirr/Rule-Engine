@@ -25,8 +25,23 @@
   --font-sans: 'Inter', system-ui, sans-serif;
 
   --shadow-glow-sm: 0 0 10px rgba(0, 212, 255, 0.15);
-  --shadow-glow-md: 0 0 20px rgba(0, 212, 255, 0.2);
+  --shadow-glow-md: 0 0 15px rgba(0, 212, 255, 0.3);
   --shadow-glow-lg: 0 0 40px rgba(168, 85, 247, 0.15);
+}
+
+:root[data-theme='light'] {
+  --color-space-900: #f8fafc;
+  --color-space-800: #e2e8f0;
+  --color-neon-blue: #0ea5e9;
+  --color-neon-purple: #8b5cf6;
+  --color-surface-elevated: #ffffff;
+  --color-surface-secondary: #f1f5f9;
+  --color-border-subtle: rgba(0, 0, 0, 0.1);
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94a3b8;
+  --shadow-glow-sm: 0 0 5px rgba(14, 165, 233, 0.3);
+  --shadow-glow-md: 0 0 15px rgba(14, 165, 233, 0.4);
 }
 
 body {
@@ -40,4 +55,123 @@ body {
 
 * {
   box-sizing: border-box;
+}
+
+@layer components {
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed border outline-none;
+  }
+  .btn-primary {
+    @apply bg-neon-blue/10 border-neon-blue/50 text-neon-blue hover:bg-neon-blue hover:text-space-900 hover:shadow-[0_0_15px_rgba(14,165,233,0.4)];
+  }
+  .btn-secondary {
+    @apply bg-surface-elevated border-border-subtle text-text-primary hover:bg-surface-secondary hover:border-text-secondary;
+  }
+  .btn-danger {
+    @apply bg-red-500/10 border-red-500/50 text-red-400 hover:bg-red-500 hover:text-white hover:shadow-[0_0_15px_rgba(239,68,68,0.4)];
+  }
+  .btn-icon {
+    @apply p-2 rounded-full hover:bg-surface-secondary text-text-secondary hover:text-text-primary transition-colors;
+  }
+  .btn-sm {
+    @apply px-3 py-1 text-xs;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-surface-elevated border border-border-subtle rounded-xl p-4 transition-all duration-300;
+  }
+  .card-glow-hover:hover {
+    @apply border-neon-blue/50 shadow-[0_0_15px_rgba(14,165,233,0.2)] -translate-y-[2px];
+  }
+
+  /* Inputs & Selects */
+  .input-label {
+    @apply block text-sm font-medium text-text-secondary mb-1.5;
+  }
+  .input-field {
+    @apply w-full bg-space-900 border border-border-subtle rounded-md px-3 py-2 text-text-primary outline-none transition-all duration-300 focus:border-neon-blue focus:shadow-[0_0_10px_rgba(14,165,233,0.2)];
+  }
+
+  /* Modals */
+  .modal-overlay {
+    @apply fixed inset-0 bg-space-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 opacity-0 animate-[fadeIn_0.2s_ease-out_forwards];
+  }
+  .modal-content {
+    @apply bg-surface-elevated border border-border-subtle rounded-xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col scale-95 opacity-0 animate-[scaleIn_0.2s_ease-out_forwards];
+  }
+
+  /* Switch */
+  .switch-root {
+    @apply relative inline-flex items-center h-6 rounded-full w-11 transition-colors outline-none cursor-pointer border border-border-subtle;
+  }
+  .switch-root[data-state='checked'] {
+    @apply bg-neon-blue border-neon-blue;
+  }
+  .switch-root[data-state='unchecked'] {
+    @apply bg-space-800;
+  }
+  .switch-thumb {
+    @apply inline-block w-4 h-4 transform bg-white rounded-full transition-transform;
+  }
+  .switch-thumb[data-state='checked'] {
+    @apply translate-x-6;
+  }
+  .switch-thumb[data-state='unchecked'] {
+    @apply translate-x-1;
+  }
+
+  /* Theme Toggle */
+  .theme-toggle {
+    @apply flex items-center justify-center w-9 h-9 rounded-full border border-border-subtle bg-transparent text-text-primary cursor-pointer transition-all duration-300 hover:bg-surface-secondary hover:shadow-[0_0_5px_rgba(14,165,233,0.3)];
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-space-900;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surface-secondary rounded-full hover:bg-text-muted transition-colors;
+  }
+}
+
+/* React Flow Overrides */
+.react-flow__controls {
+  background-color: var(--color-surface-elevated) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5) !important;
+  overflow: hidden;
+}
+
+.react-flow__controls-button {
+  background-color: var(--color-surface-elevated) !important;
+  border-bottom: 1px solid var(--color-border-subtle) !important;
+  color: var(--color-text-primary) !important;
+  transition: all 0.2s ease;
+}
+
+.react-flow__controls-button:last-child {
+  border-bottom: none !important;
+}
+
+.react-flow__controls-button:hover {
+  background-color: var(--color-surface-secondary) !important;
+  color: var(--color-neon-blue) !important;
+}
+
+.react-flow__controls-button svg {
+  fill: currentColor !important;
+}
+
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+@keyframes scaleIn {
+  to { transform: scale(1); opacity: 1; }
 }

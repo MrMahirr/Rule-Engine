@@ -6,3 +6,4 @@ export * from './Modal/Modal';
 export * from './Toast/ToastProvider';
 export * from './Switch/Switch';
 export * from './Skeleton/Skeleton';
+export * from './ThemeToggle/ThemeToggle';

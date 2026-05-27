@@ -24,6 +24,7 @@ export interface RulePayload {
   name: string;
   description: string;
   category?: string;
+  priority?: number;
   isActive: boolean;
   ast: ASTNode | null;
   actions: ASTActionNode[];

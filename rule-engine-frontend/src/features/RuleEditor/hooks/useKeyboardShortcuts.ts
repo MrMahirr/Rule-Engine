@@ -4,9 +4,11 @@ interface ShortcutHandlers {
   onSave?: () => void;
   onUndo?: () => void;
   onRedo?: () => void;
+  onCopy?: () => void;
+  onPaste?: () => void;
 }
 
-export function useKeyboardShortcuts({ onSave, onUndo, onRedo }: ShortcutHandlers) {
+export function useKeyboardShortcuts({ onSave, onUndo, onRedo, onCopy, onPaste }: ShortcutHandlers) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -33,9 +35,23 @@ export function useKeyboardShortcuts({ onSave, onUndo, onRedo }: ShortcutHandler
           onRedo?.();
         }
       }
+
+      // Ctrl + C (Copy)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
+        if (!isInput) {
+          onCopy?.();
+        }
+      }
+
+      // Ctrl + V (Paste)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+        if (!isInput) {
+          onPaste?.();
+        }
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onSave, onUndo, onRedo]);
+  }, [onSave, onUndo, onRedo, onCopy, onPaste]);
 }

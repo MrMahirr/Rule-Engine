@@ -1,5 +1,4 @@
 import React, { ReactNode } from 'react';
-import './Card.css';
 
 export interface CardProps {
   children: ReactNode;
@@ -16,21 +15,22 @@ export const Card: React.FC<CardProps> = ({
   glowColor = 'blue',
   onClick 
 }) => {
-  const getGlowClass = () => {
+  const getGlowStyles = () => {
+    if (!glowOnHover) return '';
     switch(glowColor) {
-      case 'blue': return 'glow-blue';
-      case 'purple': return 'glow-purple';
-      case 'cyan': return 'glow-cyan';
-      default: return 'glow-blue';
+      case 'blue': return 'hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]';
+      case 'purple': return 'hover:shadow-[0_0_15px_rgba(168,85,247,0.5)]';
+      case 'cyan': return 'hover:shadow-[0_0_15px_rgba(6,182,212,0.5)]';
+      default: return 'hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]';
     }
   };
 
-  const glowClass = glowOnHover ? `glow-hover ${getGlowClass()}` : '';
-  const clickableClass = onClick ? 'clickable' : '';
+  const glowStyles = getGlowStyles();
+  const clickableClass = onClick ? 'cursor-pointer hover:bg-surface-secondary' : '';
 
   return (
     <div 
-      className={`rule-engine-card ${glowClass} ${clickableClass} ${className}`}
+      className={`card ${glowStyles} ${clickableClass} ${className}`}
       onClick={onClick}
     >
       {children}

@@ -1,5 +1,5 @@
 import React, { SelectHTMLAttributes, forwardRef } from 'react';
-import './SelectBox.css';
+import { ChevronDown } from 'lucide-react';
 
 export interface Option {
   value: string;
@@ -16,27 +16,25 @@ export interface SelectBoxProps extends SelectHTMLAttributes<HTMLSelectElement> 
 export const SelectBox = forwardRef<HTMLSelectElement, SelectBoxProps>(
   ({ label, options, error, fullWidth = false, className = '', ...props }, ref) => {
     return (
-      <div className={`rule-engine-select-wrapper ${fullWidth ? 'full-width' : ''} ${className}`}>
-        {label && <label className="select-label">{label}</label>}
-        <div className="select-input-container">
+      <div className={`flex flex-col gap-1 ${fullWidth ? 'w-full' : ''} ${className}`}>
+        {label && <label className="input-label">{label}</label>}
+        <div className="relative">
           <select 
             ref={ref}
-            className={`rule-engine-select ${error ? 'has-error' : ''}`}
+            className={`input-field appearance-none cursor-pointer pr-10 ${error ? 'border-red-500' : ''}`}
             {...props}
           >
             {options.map((opt) => (
-              <option key={opt.value} value={opt.value} className="select-option">
+              <option key={opt.value} value={opt.value}>
                 {opt.label}
               </option>
             ))}
           </select>
-          <div className="select-arrow">
-            <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-secondary">
+            <ChevronDown size={16} />
           </div>
         </div>
-        {error && <span className="select-error">{error}</span>}
+        {error && <span className="text-red-400 text-xs mt-1">{error}</span>}
       </div>
     );
   }

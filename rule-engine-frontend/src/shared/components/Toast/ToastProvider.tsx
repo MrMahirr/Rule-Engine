@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
-import './Toast.css';
+import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { CheckCircle, AlertTriangle, XCircle, X } from 'lucide-react';
 
-export type ToastType = 'success' | 'error' | 'info';
+export type ToastType = 'success' | 'error' | 'warning';
 
 export interface ToastProps {
   id: string;
@@ -12,50 +12,25 @@ export interface ToastProps {
 }
 
 interface ToastContextType {
-  toast: (options: Omit<ToastProps, 'id'>) => void;
   success: (title: string, description?: string) => void;
   error: (title: string, description?: string) => void;
-  info: (title: string, description?: string) => void;
+  warning: (title: string, description?: string) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
-// Individual Toast Message Component
-function ToastMessage({ toast, onClose }: { toast: ToastProps; onClose: (id: string) => void }) {
-  const [isClosing, setIsClosing] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsClosing(true);
-      setTimeout(() => onClose(toast.id), 300); // Wait for animation
-    }, toast.duration || 3000);
-
-    return () => clearTimeout(timer);
-  }, [toast.duration, toast.id, onClose]);
-
-  const handleManualClose = () => {
-    setIsClosing(true);
-    setTimeout(() => onClose(toast.id), 300);
-  };
-
-  return (
-    <div className={`toast toast-${toast.type} ${isClosing ? 'toast-closing' : ''}`}>
-      <div className="toast-content">
-        <div className="toast-title">{toast.title}</div>
-        {toast.description && <div className="toast-desc">{toast.description}</div>}
-      </div>
-      <button className="toast-close" onClick={handleManualClose}>✕</button>
-    </div>
-  );
-}
-
-// Provider Component
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastProps[]>([]);
 
   const addToast = useCallback((options: Omit<ToastProps, 'id'>) => {
     const id = Math.random().toString(36).substring(2, 9);
     setToasts((prev) => [...prev, { ...options, id }]);
+    
+    if (options.duration !== 0) {
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== id));
+      }, options.duration || 3000);
+    }
   }, []);
 
   const removeToast = useCallback((id: string) => {
@@ -64,14 +39,38 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const success = useCallback((title: string, description?: string) => addToast({ title, description, type: 'success' }), [addToast]);
   const error = useCallback((title: string, description?: string) => addToast({ title, description, type: 'error' }), [addToast]);
-  const info = useCallback((title: string, description?: string) => addToast({ title, description, type: 'info' }), [addToast]);
+  const warning = useCallback((title: string, description?: string) => addToast({ title, description, type: 'warning' }), [addToast]);
 
   return (
-    <ToastContext.Provider value={{ toast: addToast, success, error, info }}>
+    <ToastContext.Provider value={{ success, error, warning }}>
       {children}
-      <div className="toast-container">
-        {toasts.map((t) => (
-          <ToastMessage key={t.id} toast={t} onClose={removeToast} />
+      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+        {toasts.map(toast => (
+          <div 
+            key={toast.id} 
+            className={`flex items-start gap-3 p-4 rounded-lg shadow-lg border border-border-subtle bg-surface-elevated animate-[fadeIn_0.3s_ease-out_forwards]
+              ${toast.type === 'success' ? 'border-l-4 border-l-green-500' : ''}
+              ${toast.type === 'error' ? 'border-l-4 border-l-red-500' : ''}
+              ${toast.type === 'warning' ? 'border-l-4 border-l-yellow-500' : ''}
+            `}
+            style={{ width: '300px' }}
+          >
+            <div className="mt-0.5">
+              {toast.type === 'success' && <CheckCircle className="text-green-500" size={18} />}
+              {toast.type === 'error' && <XCircle className="text-red-500" size={18} />}
+              {toast.type === 'warning' && <AlertTriangle className="text-yellow-500" size={18} />}
+            </div>
+            <div className="flex-1 flex flex-col gap-1">
+              <span className="font-semibold text-text-primary text-sm">{toast.title}</span>
+              {toast.description && <span className="text-text-secondary text-sm">{toast.description}</span>}
+            </div>
+            <button 
+              className="text-text-muted hover:text-text-primary transition-colors"
+              onClick={() => removeToast(toast.id)}
+            >
+              <X size={16} />
+            </button>
+          </div>
         ))}
       </div>
     </ToastContext.Provider>
