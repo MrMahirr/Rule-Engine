@@ -409,7 +409,7 @@ Hata response:
 
 ## Sonraki Adim
 
-Planlanan 7 faz tamamlandi. Docker altyapisi `compose.yaml` ile eklendi; PostgreSQL ve Redis resmi `latest` imajlari uzerinden calisir. Varsayilan compose calistirmasi sadece PostgreSQL/Redis altyapisini acar; backend container'i icin `app` profili kullanilir.
+Planlanan 7 faz tamamlandi. Docker altyapisi `compose.yaml` ile eklendi; PostgreSQL ve Redis resmi `latest` imajlari uzerinden calisir. Varsayilan compose calistirmasi sadece PostgreSQL/Redis altyapisini acar; backend container'i icin `app` profili kullanilir. Lokal IDE calistirmalarinda makinedeki servis portlariyla cakismamak icin Docker PostgreSQL host portu varsayilan olarak `4567`, Redis host portu varsayilan olarak `7856` secilmistir.
 
 Komutlar:
 

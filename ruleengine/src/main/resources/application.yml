@@ -5,7 +5,7 @@ spring:
   application:
     name: ruleengine
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/ruleengine}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:4567/ruleengine}
     username: ${SPRING_DATASOURCE_USERNAME:ruleengine}
     password: ${SPRING_DATASOURCE_PASSWORD:ruleengine}
     driver-class-name: org.postgresql.Driver
@@ -19,8 +19,10 @@ spring:
   data:
     redis:
       host: ${SPRING_REDIS_HOST:localhost}
-      port: ${SPRING_REDIS_PORT:6379}
+      port: ${SPRING_REDIS_PORT:7856}
       password: ${SPRING_REDIS_PASSWORD:}
+      repositories:
+        enabled: false
   cache:
     type: redis
     redis:
