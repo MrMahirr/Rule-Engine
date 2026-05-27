@@ -1,7 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '../../../shared/api/apiClient';
-import { ApiEndpoint, HttpMethod } from '../../../shared/api/endpoints';
-import { ApiResponse } from '../../../shared/api/types';
+import { MetricsApi } from './metricsApi';
 
 export interface DashboardMetrics {
   totalEvaluations: number;
@@ -38,21 +36,13 @@ export const metricsKeys = {
 export function useDashboardMetrics() {
   return useQuery({
     queryKey: metricsKeys.dashboard(),
-    queryFn: () =>
-      apiClient.request<ApiResponse<DashboardMetrics>>({
-        endpoint: ApiEndpoint.GET_DASHBOARD_METRICS,
-        method: HttpMethod.GET,
-      }),
+    queryFn: MetricsApi.getDashboardMetrics,
   });
 }
 
 export function useAuditLogs(page: number = 0, size: number = 10) {
   return useQuery({
     queryKey: metricsKeys.logs(page, size),
-    queryFn: () =>
-      apiClient.request<ApiResponse<PageResponse<RuleExecutionLog>>>({
-        endpoint: `${ApiEndpoint.GET_AUDIT_LOGS}?page=${page}&size=${size}`,
-        method: HttpMethod.GET,
-      }),
+    queryFn: () => MetricsApi.getAuditLogs(page, size),
   });
 }
