@@ -16,11 +16,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     
     const getVariantClass = (v: ButtonVariant) => {
       switch (v) {
-        case 'primary': return 'bg-blue-600 text-white hover:bg-blue-700';
-        case 'secondary': return 'bg-gray-200 text-gray-800 hover:bg-gray-300';
-        case 'ghost': return 'bg-transparent hover:bg-gray-100 text-gray-600';
-        case 'danger': return 'bg-red-600 text-white hover:bg-red-700';
-        default: return 'bg-blue-600 text-white';
+        case 'primary': return 'bg-neon-blue/10 border border-neon-blue/30 text-neon-blue hover:bg-neon-blue hover:text-space-900 shadow-[0_0_5px_rgba(14,165,233,0.1)] hover:shadow-[0_0_15px_rgba(14,165,233,0.4)]';
+        case 'secondary': return 'bg-surface-elevated border border-border-subtle text-text-primary hover:bg-surface-secondary hover:border-text-secondary';
+        case 'ghost': return 'bg-transparent text-text-primary hover:bg-surface-secondary border border-transparent hover:border-border-subtle';
+        case 'danger': return 'bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500 hover:text-white shadow-[0_0_5px_rgba(239,68,68,0.1)] hover:shadow-[0_0_15px_rgba(239,68,68,0.4)]';
+        default: return 'bg-surface-elevated text-text-primary';
       }
     };
 
