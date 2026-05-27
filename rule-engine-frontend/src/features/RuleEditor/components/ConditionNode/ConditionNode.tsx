@@ -84,11 +84,17 @@ export function ConditionNode({ id, data, selected }: NodeProps<ConditionFlowNod
           <label className="text-xs font-medium text-text-secondary uppercase">Değer</label>
           <input 
             className="w-full bg-space-900 border border-border-subtle rounded text-text-primary text-sm p-2 outline-none focus:border-neon-blue"
-            type={selectedField?.type === 'NUMBER' ? 'number' : 'text'}
+            type={selectedField?.type === 'NUMBER' && data.operator !== ConditionOperator.IN && data.operator !== ConditionOperator.NOT_IN ? 'number' : 'text'}
             value={data.value as string || ''}
             onChange={(e) => updateData({ value: e.target.value })}
             disabled={!data.operator}
-            placeholder="Değer girin"
+            placeholder={
+              data.operator === ConditionOperator.IN || data.operator === ConditionOperator.NOT_IN
+                ? 'Örn: A,B,C'
+                : data.operator === ConditionOperator.MATCHES
+                ? 'Örn: ^[A-Z]+$'
+                : 'Değer girin'
+            }
           />
         </div>
       </div>

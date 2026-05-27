@@ -2,10 +2,25 @@ export type ASTNode =
   | ASTConditionNode
   | ASTLogicNode;
 
+export type Operator = 
+  | '==' 
+  | '!=' 
+  | '>' 
+  | '<' 
+  | '>=' 
+  | '<=' 
+  | 'contains' 
+  | 'not_contains'
+  | 'in'
+  | 'not_in'
+  | 'starts_with'
+  | 'ends_with'
+  | 'matches';
+
 export interface ASTConditionNode {
   type: 'CONDITION';
   field: string;
-  operator: string;
+  operator: Operator;
   value: string;
 }
 

@@ -9,18 +9,37 @@ export function evaluateAST(ast: ASTNode | null, data: any): boolean {
 
     if (fieldValue === undefined || fieldValue === null) return false;
 
-    const valueStr = String(fieldValue).toLowerCase();
-    const targetStr = String(condition.value).toLowerCase();
+    const valueStr = String(fieldValue);
+    const targetStr = String(condition.value);
 
     switch (condition.operator) {
-      case '==': return valueStr === targetStr;
-      case '!=': return valueStr !== targetStr;
+      case '==': return valueStr.toLowerCase() === targetStr.toLowerCase();
+      case '!=': return valueStr.toLowerCase() !== targetStr.toLowerCase();
       case '>': return Number(fieldValue) > Number(condition.value);
       case '<': return Number(fieldValue) < Number(condition.value);
       case '>=': return Number(fieldValue) >= Number(condition.value);
       case '<=': return Number(fieldValue) <= Number(condition.value);
       case 'contains': return valueStr.includes(targetStr);
       case 'not_contains': return !valueStr.includes(targetStr);
+      case 'in': {
+        const arr = targetStr.split(',').map(s => s.trim());
+        return arr.includes(valueStr);
+      }
+      case 'not_in': {
+        const arr = targetStr.split(',').map(s => s.trim());
+        return !arr.includes(valueStr);
+      }
+      case 'starts_with':
+        return valueStr.startsWith(targetStr);
+      case 'ends_with':
+        return valueStr.endsWith(targetStr);
+      case 'matches':
+        try {
+          const regex = new RegExp(targetStr);
+          return regex.test(valueStr);
+        } catch (e) {
+          return false;
+        }
       default: return false;
     }
   }

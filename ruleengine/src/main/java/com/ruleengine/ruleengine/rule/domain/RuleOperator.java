@@ -10,7 +10,12 @@ public enum RuleOperator {
     GREATER_OR_EQUAL(">="),
     LESS_OR_EQUAL("<="),
     CONTAINS("contains"),
-    NOT_CONTAINS("not_contains");
+    NOT_CONTAINS("not_contains"),
+    IN("in"),
+    NOT_IN("not_in"),
+    STARTS_WITH("starts_with"),
+    ENDS_WITH("ends_with"),
+    MATCHES("matches");
 
     private final String symbol;
 

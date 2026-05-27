@@ -9,6 +9,11 @@ export enum ConditionOperator {
   LESS_EQUAL = '<=',
   CONTAINS = 'contains',
   NOT_CONTAINS = 'not_contains',
+  IN = 'in',
+  NOT_IN = 'not_in',
+  STARTS_WITH = 'starts_with',
+  ENDS_WITH = 'ends_with',
+  MATCHES = 'matches',
 }
 
 export enum LogicGateType {
