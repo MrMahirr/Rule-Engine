@@ -32,6 +32,22 @@ export function useCreateFieldMutation() {
   });
 }
 
+export function useUpdateFieldMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: FieldPayload }) =>
+      apiClient.request<ApiResponse<FieldResponse>>({
+        endpoint: replaceParams(ApiEndpoint.UPDATE_FIELD, { id }),
+        method: HttpMethod.PUT,
+        data: payload,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: fieldKeys.lists() });
+    },
+  });
+}
+
 export function useDeleteFieldMutation() {
   const queryClient = useQueryClient();
 

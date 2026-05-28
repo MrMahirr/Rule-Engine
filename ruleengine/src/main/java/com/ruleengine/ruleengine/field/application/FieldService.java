@@ -10,6 +10,8 @@ public interface FieldService {
 
     FieldResponse createField(FieldCreateRequest request);
 
+    FieldResponse updateField(UUID id, FieldCreateRequest request);
+
     List<FieldResponse> getFields();
 
     void deleteField(UUID id);

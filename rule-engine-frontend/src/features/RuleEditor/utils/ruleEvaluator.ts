@@ -15,10 +15,30 @@ export function evaluateAST(ast: ASTNode | null, data: any): boolean {
     switch (condition.operator) {
       case '==': return valueStr.toLowerCase() === targetStr.toLowerCase();
       case '!=': return valueStr.toLowerCase() !== targetStr.toLowerCase();
-      case '>': return Number(fieldValue) > Number(condition.value);
-      case '<': return Number(fieldValue) < Number(condition.value);
-      case '>=': return Number(fieldValue) >= Number(condition.value);
-      case '<=': return Number(fieldValue) <= Number(condition.value);
+      case '>': {
+        if (isNaN(Number(valueStr)) && !isNaN(Date.parse(valueStr)) && !isNaN(Date.parse(targetStr))) {
+          return new Date(valueStr) > new Date(targetStr);
+        }
+        return Number(fieldValue) > Number(condition.value);
+      }
+      case '<': {
+        if (isNaN(Number(valueStr)) && !isNaN(Date.parse(valueStr)) && !isNaN(Date.parse(targetStr))) {
+          return new Date(valueStr) < new Date(targetStr);
+        }
+        return Number(fieldValue) < Number(condition.value);
+      }
+      case '>=': {
+        if (isNaN(Number(valueStr)) && !isNaN(Date.parse(valueStr)) && !isNaN(Date.parse(targetStr))) {
+          return new Date(valueStr) >= new Date(targetStr);
+        }
+        return Number(fieldValue) >= Number(condition.value);
+      }
+      case '<=': {
+        if (isNaN(Number(valueStr)) && !isNaN(Date.parse(valueStr)) && !isNaN(Date.parse(targetStr))) {
+          return new Date(valueStr) <= new Date(targetStr);
+        }
+        return Number(fieldValue) <= Number(condition.value);
+      }
       case 'contains': return valueStr.includes(targetStr);
       case 'not_contains': return !valueStr.includes(targetStr);
       case 'in': {

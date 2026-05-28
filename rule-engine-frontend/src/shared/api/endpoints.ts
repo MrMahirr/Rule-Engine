@@ -19,6 +19,7 @@ export enum ApiEndpoint {
   TOGGLE_RULE = '/api/rules/:id/toggle',
   GET_ALL_FIELDS = '/api/fields',
   CREATE_FIELD = '/api/fields',
+  UPDATE_FIELD = '/api/fields/:id',
   DELETE_FIELD = '/api/fields/:id',
   GET_DASHBOARD_METRICS = '/api/metrics/dashboard',
   GET_AUDIT_LOGS = '/api/metrics/logs',

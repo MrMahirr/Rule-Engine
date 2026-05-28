@@ -39,7 +39,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     ResponseEntity<ApiErrorResponse> handleUnexpected(Exception exception) {
-        return error(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected server error", Map.of());
+        exception.printStackTrace(); // Hatanın konsola yazılması için eklendi
+        String msg = "Unexpected server error: " + exception.getClass().getSimpleName() + " - " + exception.getMessage();
+        return error(HttpStatus.INTERNAL_SERVER_ERROR, msg, Map.of());
     }
 
     private ResponseEntity<ApiErrorResponse> error(HttpStatus status, String message, Map<String, Object> details) {

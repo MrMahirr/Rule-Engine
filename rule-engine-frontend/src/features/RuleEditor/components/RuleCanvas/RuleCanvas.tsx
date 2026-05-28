@@ -27,6 +27,7 @@ import { RuleVersionModal } from '../RuleVersionModal/RuleVersionModal';
 import { useConfirm } from '../../../../shared/hooks';
 import { RuleSimulator } from '../RuleSimulator/RuleSimulator';
 import { RuleToolbar } from '../RuleToolbar/RuleToolbar';
+import { DeletableEdge } from '../DeletableEdge/DeletableEdge';
 import { Map } from 'lucide-react';
 import { RuleEngineContext } from '../../contexts/RuleEngineContext';
 
@@ -40,6 +41,15 @@ const NODE_COLORS: Record<string, string> = {
   condition: 'var(--color-neon-blue)',
   logic_gate: 'var(--color-neon-purple)',
   action: 'var(--color-neon-cyan)',
+};
+
+const edgeTypes = {
+  deletable: DeletableEdge,
+};
+
+const defaultEdgeOptions = {
+  type: 'deletable',
+  animated: true,
 };
 
 
@@ -185,9 +195,10 @@ function RuleCanvasInternal({ selectedRuleId, setSelectedRuleId }: { selectedRul
         success('Kural Kaydedildi', 'Kural başarıyla veritabanına kaydedildi.');
       }
       setIsModalOpen(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Save failed', err);
-      error('Kayıt Başarısız', 'Kural kaydedilirken bir sorun oluştu.');
+      const errorMessage = err?.message || 'Kural kaydedilirken bir sorun oluştu.';
+      error('Kayıt Başarısız', errorMessage);
     }
   };
 
@@ -242,6 +253,8 @@ function RuleCanvasInternal({ selectedRuleId, setSelectedRuleId }: { selectedRul
         nodeTypes={nodeTypes}
         onDragOver={onDragOver}
         onDrop={onDrop}
+        edgeTypes={edgeTypes}
+        defaultEdgeOptions={defaultEdgeOptions}
         deleteKeyCode={['Backspace', 'Delete']}
         fitView
         proOptions={{ hideAttribution: true }}

@@ -45,6 +45,26 @@ public class FieldServiceImpl implements FieldService {
     }
 
     @Override
+    public FieldResponse updateField(UUID id, FieldCreateRequest request) {
+        fieldValidator.validateFieldDefinition(request);
+        FieldDefinitionEntity entity = fieldRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Field", id));
+
+        if (!entity.getName().equalsIgnoreCase(request.name()) && fieldRepository.existsByNameIgnoreCase(request.name())) {
+            throw new RuleValidationException("Field name already exists");
+        }
+
+        entity.setName(request.name());
+        entity.setLabel(request.label());
+        entity.setType(request.type());
+        entity.setRequired(request.required());
+        entity.setAllowedValues(request.allowedValues());
+
+        FieldDefinitionEntity updated = fieldRepository.save(entity);
+        return fieldMapper.toResponse(updated);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<FieldResponse> getFields() {
         return fieldRepository.findAll().stream()

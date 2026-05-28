@@ -24,6 +24,7 @@ export function RuleSimulator({ isOpen, onClose, ast, actions, ruleId }: RuleSim
   // Single Test State
   const [jsonInput, setJsonInput] = useState<string>('{\n  "age": 25,\n  "status": "active"\n}');
   const [result, setResult] = useState<{ matched: boolean; error?: string } | null>(null);
+  const [isEvaluating, setIsEvaluating] = useState(false);
 
   // Batch Test State
   const [csvContent, setCsvContent] = useState<string>('age,status,amount\n25,active,1000\n18,inactive,500\n30,active,2000');
@@ -35,6 +36,8 @@ export function RuleSimulator({ isOpen, onClose, ast, actions, ruleId }: RuleSim
   const evaluateMutation = useEvaluateRuleMutation();
 
   const handleSingleTest = async () => {
+    setResult(null);
+    setIsEvaluating(true);
     try {
       const parsedData = JSON.parse(jsonInput);
       if (!ast) {
@@ -48,8 +51,9 @@ export function RuleSimulator({ isOpen, onClose, ast, actions, ruleId }: RuleSim
           const res = await evaluateMutation.mutateAsync({ ruleId, facts: parsedData });
           setResult({ matched: res.data.matched });
           return;
-        } catch (err) {
-          setResult({ matched: false, error: 'Sunucu tarafında değerlendirme başarısız oldu.' });
+        } catch (err: any) {
+          const errorMsg = err?.message || 'Sunucu tarafında değerlendirme başarısız oldu.';
+          setResult({ matched: false, error: errorMsg });
           return;
         }
       }
@@ -59,10 +63,13 @@ export function RuleSimulator({ isOpen, onClose, ast, actions, ruleId }: RuleSim
       setResult({ matched: isMatched });
     } catch (e) {
       setResult({ matched: false, error: 'Geçersiz JSON formatı.' });
+    } finally {
+      setIsEvaluating(false);
     }
   };
 
   const handleBatchTest = () => {
+    setBatchResult(null);
     if (!ruleId) {
       setBatchResult({ error: 'Toplu test (Backend Performansı) yapabilmek için lütfen önce kuralı KAYDEDİN.' });
       return;
@@ -143,7 +150,7 @@ export function RuleSimulator({ isOpen, onClose, ast, actions, ruleId }: RuleSim
               onChange={e => setJsonInput(e.target.value)}
               spellCheck={false}
             />
-            <Button onClick={handleSingleTest} className="w-full" variant="primary">
+            <Button onClick={handleSingleTest} className="w-full" variant="primary" isLoading={isEvaluating}>
               Test Et
             </Button>
             {result && (

@@ -24,7 +24,7 @@ export function useRuleEngine() {
   const onConnect = useCallback(
     (params: Connection | Edge) => {
       takeSnapshot();
-      setEdges((eds) => addEdge({ ...params, animated: true }, eds));
+      setEdges((eds) => addEdge({ ...params, type: 'deletable', animated: true }, eds));
     },
     [setEdges, takeSnapshot]
   );

@@ -44,4 +44,30 @@ final class OperatorValueConverter {
     static String toText(Object value) {
         return value == null ? null : value.toString();
     }
+
+    static java.time.Instant toDate(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof java.time.Instant instant) {
+            return instant;
+        }
+        if (value instanceof java.util.Date date) {
+            return date.toInstant();
+        }
+        String text = value.toString().trim();
+        try {
+            return java.time.Instant.parse(text);
+        } catch (java.time.format.DateTimeParseException e1) {
+            try {
+                return java.time.LocalDate.parse(text).atStartOfDay(java.time.ZoneId.of("UTC")).toInstant();
+            } catch (java.time.format.DateTimeParseException e2) {
+                try {
+                    return java.time.LocalDateTime.parse(text).atZone(java.time.ZoneId.of("UTC")).toInstant();
+                } catch (java.time.format.DateTimeParseException e3) {
+                    return null;
+                }
+            }
+        }
+    }
 }
