@@ -75,21 +75,100 @@ export function ConditionNode({ id, data, selected }: NodeProps<ConditionFlowNod
           error={data.field && !data.operator ? 'Zorunlu' : undefined}
         />
 
-        <Input
-          label="Değer"
-          type={selectedField?.type === 'NUMBER' && data.operator !== ConditionOperator.IN && data.operator !== ConditionOperator.NOT_IN ? 'number' : 'text'}
-          value={data.value as string || ''}
-          onChange={(e) => updateData({ value: e.target.value })}
-          disabled={!data.operator}
-          placeholder={
-            data.operator === ConditionOperator.IN || data.operator === ConditionOperator.NOT_IN
-              ? 'Örn: A,B,C'
-              : data.operator === ConditionOperator.MATCHES
-              ? 'Örn: ^[A-Z]+$'
-              : 'Değer girin'
+        {(() => {
+          const isMultiple = data.operator === ConditionOperator.IN || data.operator === ConditionOperator.NOT_IN;
+
+          if (selectedField?.type === 'ENUM' && !isMultiple) {
+            return (
+              <SelectBox
+                label="Değer"
+                value={data.value as string || ''}
+                onChange={(e) => updateData({ value: e.target.value })}
+                disabled={!data.operator}
+                options={[
+                  { value: '', label: 'Değer Seçin' },
+                  ...(selectedField.allowedValues || []).map(val => ({ value: val, label: val }))
+                ]}
+                error={data.operator && !data.value ? 'Zorunlu' : undefined}
+              />
+            );
           }
-          error={data.operator && !data.value ? 'Zorunlu' : undefined}
-        />
+
+          if (selectedField?.type === 'BOOLEAN' && !isMultiple) {
+            return (
+              <SelectBox
+                label="Değer"
+                value={data.value as string || ''}
+                onChange={(e) => updateData({ value: e.target.value })}
+                disabled={!data.operator}
+                options={[
+                  { value: '', label: 'Seçiniz...' },
+                  { value: 'true', label: 'Doğru (true)' },
+                  { value: 'false', label: 'Yanlış (false)' }
+                ]}
+                error={data.operator && !data.value ? 'Zorunlu' : undefined}
+              />
+            );
+          }
+
+          if (selectedField?.type === 'DATETIME' && !isMultiple) {
+            const val = (data.value as string) || '';
+            const [dateStr, timeStr] = val.includes('T') ? val.split('T') : [val, ''];
+            
+            return (
+              <div className="flex flex-col gap-1">
+                <label className="input-label">Değer (Tarih ve Saat)</label>
+                <div className="flex gap-2">
+                  <Input
+                    type="date"
+                    value={dateStr}
+                    onChange={(e) => {
+                      const newDate = e.target.value;
+                      updateData({ value: newDate ? `${newDate}T${timeStr || '00:00'}` : '' });
+                    }}
+                    disabled={!data.operator}
+                    className="flex-1"
+                  />
+                  <Input
+                    type="time"
+                    value={timeStr}
+                    onChange={(e) => {
+                      const newTime = e.target.value;
+                      updateData({ value: dateStr ? `${dateStr}T${newTime}` : `T${newTime}` });
+                    }}
+                    disabled={!data.operator}
+                    className="flex-1"
+                  />
+                </div>
+                {data.operator && !data.value && <span className="text-red-400 text-xs mt-1">Zorunlu</span>}
+              </div>
+            );
+          }
+
+          let inputType = 'text';
+          if (!isMultiple) {
+            if (selectedField?.type === 'NUMBER') inputType = 'number';
+            else if (selectedField?.type === 'DATE') inputType = 'date';
+          }
+
+          return (
+            <Input
+              label="Değer"
+              type={inputType}
+              value={data.value as string || ''}
+              onChange={(e) => updateData({ value: e.target.value })}
+              disabled={!data.operator}
+              placeholder={
+                isMultiple
+                  ? 'Örn: A,B,C'
+                  : data.operator === ConditionOperator.MATCHES
+                  ? 'Örn: ^[A-Z]+$'
+                  : 'Değer girin'
+              }
+              error={data.operator && !data.value ? 'Zorunlu' : undefined}
+            />
+          );
+        })()}
       </div>
       
       <Handle type="source" position={Position.Right} className="w-3 h-3 bg-neon-blue border-2 border-surface-elevated transition-transform hover:scale-150" />

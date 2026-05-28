@@ -14,10 +14,10 @@ export function FieldManagementModal({ isOpen, onClose }: Props) {
   const { data: fieldsData, isLoading } = useFieldsQuery();
   const createMutation = useCreateFieldMutation();
   const deleteMutation = useDeleteFieldMutation();
-  const { success } = useToast();
+  const { success, error } = useToast();
   const { confirm } = useConfirm();
 
-  const [newField, setNewField] = useState({ name: '', label: '', type: 'STRING', required: false });
+  const [newField, setNewField] = useState({ name: '', label: '', type: 'STRING', required: false, allowedValuesStr: '' });
 
   const fields = fieldsData?.data || [];
   const typeOptions = [
@@ -31,17 +31,36 @@ export function FieldManagementModal({ isOpen, onClose }: Props) {
 
   const handleAddField = async () => {
     if (!newField.name.trim() || !newField.label.trim()) return;
+
+    let allowedValues: string[] | undefined = undefined;
+    if (newField.type === 'ENUM') {
+      if (!newField.allowedValuesStr.trim()) {
+        error('Hata', 'ENUM tipi için kabul edilen değerleri girmelisiniz.');
+        return;
+      }
+      allowedValues = newField.allowedValuesStr
+        .split(',')
+        .map(v => v.trim())
+        .filter(v => v !== '');
+      
+      if (!allowedValues || allowedValues.length === 0) {
+        error('Hata', 'Lütfen geçerli değerler girin (Örn: VIP, STANDARD, PREMIUM)');
+        return;
+      }
+    }
+
     try {
       await createMutation.mutateAsync({
         name: newField.name.trim(),
         label: newField.label.trim(),
         type: newField.type as FieldPayload['type'],
         required: newField.required,
+        allowedValues: allowedValues,
       });
-      setNewField({ name: '', label: '', type: 'STRING', required: false });
+      setNewField({ name: '', label: '', type: 'STRING', required: false, allowedValuesStr: '' });
       success('Alan Eklendi', `'${newField.name.trim()}' havuza eklendi.`);
-    } catch (error) {
-      console.error('Field creation failed', error);
+    } catch (err) {
+      console.error('Field creation failed', err);
     }
   };
 
@@ -83,7 +102,7 @@ export function FieldManagementModal({ isOpen, onClose }: Props) {
                 label="Tip"
                 options={typeOptions}
                 value={newField.type}
-                onChange={(e) => setNewField({...newField, type: e.target.value})}
+                onChange={(e) => setNewField({...newField, type: e.target.value, allowedValuesStr: ''})}
               />
             </div>
             <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer mb-1">
@@ -99,6 +118,17 @@ export function FieldManagementModal({ isOpen, onClose }: Props) {
               <Plus size={16} /> Ekle
             </Button>
           </div>
+          {newField.type === 'ENUM' && (
+            <div className="w-full animate-[fadeIn_0.2s_ease-out_forwards]">
+              <Input 
+                label="Kabul Edilen Değerler (Virgülle ayırarak girin)" 
+                placeholder="Örn: VIP, STANDARD, PREMIUM" 
+                value={newField.allowedValuesStr} 
+                onChange={e => setNewField({...newField, allowedValuesStr: e.target.value})}
+                fullWidth
+              />
+            </div>
+          )}
         </div>
 
         {isLoading ? (
@@ -112,7 +142,12 @@ export function FieldManagementModal({ isOpen, onClose }: Props) {
               <div key={f.id} className="flex items-center justify-between p-3 bg-space-900 border border-border-subtle rounded-lg hover:border-neon-blue transition-colors group">
                 <div className="flex flex-col gap-0.5">
                   <span className="font-medium text-text-primary text-sm">{f.label} <span className="text-text-muted">({f.name})</span></span>
-                  <span className="text-xs text-text-muted font-mono">{f.type}{f.required ? ' • Zorunlu' : ''}</span>
+                  <span className="text-xs text-text-muted font-mono">
+                    {f.type}{f.required ? ' • Zorunlu' : ''}
+                    {f.type === 'ENUM' && f.allowedValues && f.allowedValues.length > 0 && (
+                      <span className="text-neon-blue"> [ {f.allowedValues.join(', ')} ]</span>
+                    )}
+                  </span>
                 </div>
                 <button 
                   className="text-text-muted hover:text-red-400 p-2 rounded hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all"
