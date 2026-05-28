@@ -1,73 +1,51 @@
-# React + TypeScript + Vite
+# 🎨 Rule Engine Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Kuralların ve mantıksal ağaçların tasarlandığı, kullanıcı dostu ve görsel etkileşime dayalı modern Frontend (Arayüz) projesi. 
 
-Currently, two official plugins are available:
+## 🛠️ Teknolojiler
+- **Kütüphane:** React (TypeScript ile)
+- **Derleyici (Bundler):** Vite (Hızlı canlı geliştirme ortamı)
+- **Stil ve Tasarım:** TailwindCSS, Vanilla CSS, Lucide React (İkonlar)
+- **Kural Ağacı Yönetimi (Canvas):** React Flow (Düğümler ve bağlar için)
+- **Veri ve Durum Yönetimi:** React Query (Sunucu durumu) ve Zustand (İstemci durumu)
+- **Ağ İstekleri:** Axios
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🎨 Tasarım Estetiği (UI/UX)
+Proje sıradan bir iş uygulamasından öte, **premium ve dinamik bir tasarım dili** ile hazırlanmıştır:
+- **Koyu (Dark) ve Açık (Light) Tema Desteği:** Kullanıcının gözünü yormayan, kontrastlı ve zarif bir "Uzay Koyu" teması ana tema olarak belirlenmiştir.
+- **Glassmorphism ve Neon Dokunuşlar:** Şeffaf yüzeyler ve ince çizgisel neon aydınlatmalarla derinlik hissi kazandırılmıştır.
+- **Dinamik Geri Bildirim:** Etkileşim anında hover animasyonları, mikro geçişler (micro-animations) ve pürüzsüz "toast" bildirimleri kullanılmıştır.
+- **Düğüm (Node) Arayüzü:** Kural operatörleri, değer girişleri ve aksiyon seçimleri tek bir tuval (canvas) üzerinden basitçe bağlanabilir. Hatalı bağlar (edge) kolayca kesilip düzeltilebilir.
 
-## React Compiler
+## 🚀 Özellikler
+- **Düğüm Ekleme/Çıkarma:** Koşul, Mantık (VE/VEYA) ve Aksiyon düğümlerini sürükle-bırak ile tuvale taşıyın.
+- **Simülatör:** Sağ panelde yer alan simülatör ile hazırladığınız kuralı kaydetmeden önce doğrudan yerel ağaç üzerinden veya Backend'de canlı olarak test edin.
+- **Toplu Alan Ekleme:** Kural testlerini kolaylaştırmak için örnek bir JSON yapıştırarak sistemde gerekli alanları tipleri ile birlikte otomatik oluşturun. (Örn: `{"age": 25, "date": "2026-05-10"}`)
+- **Özel Kancalar (Custom Hooks):** SOLID prensiplerine uygun olarak her mantık (`useConfirm`, `useToast`, `useRuleQueries`) soyutlanmış (abstract) ve izole edilmiştir.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## ⚙️ Kurulum ve Başlatma
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 1. Bağımlılıkları Yükleme
+Proje klasörüne girin ve kütüphaneleri indirin:
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 2. Geliştirme (Development) Modunda Başlatma
+Hızlı güncelleme (Hot-Module-Reloading) ile sunucuyu başlatmak için:
+```bash
+npm run dev
 ```
+Uygulama tarayıcınızda açılacaktır (Genellikle `http://localhost:3000` veya `http://localhost:5173`).
+
+### 3. Üretime Hazırlama (Build)
+Uygulamayı canlı ortama atmak üzere optimize ederek derlemek için:
+```bash
+npm run build
+```
+Oluşan dosyalar `/dist` klasörüne aktarılacaktır.
+
+## 📁 Proje Klasör Yapısı
+- `/src/features/RuleEditor`: Kural oluşturma ekranının ana mantığı, servisleri, düğüm bileşenleri ve Zustand state'i.
+- `/src/shared`: Uygulama genelinde tekrar kullanılabilir UI bileşenleri (Modal, Input, Button), API istemcisi ve Hook'lar.
+- `index.css`: Tüm temalandırma değişkenleri ve Tailwind enjeksiyonları.
