@@ -64,6 +64,27 @@ body {
   box-sizing: border-box;
 }
 
+/* Global Interactive Cursors */
+button,
+select,
+input[type="checkbox"],
+input[type="radio"],
+[role="button"],
+[role="switch"],
+.react-flow__handle,
+.react-flow__controls-button,
+.react-flow__minimap-node {
+  cursor: pointer;
+}
+
+button:disabled,
+select:disabled,
+input:disabled,
+[disabled] {
+  cursor: not-allowed !important;
+}
+
+
 @layer components {
   /* Buttons */
   .btn {
