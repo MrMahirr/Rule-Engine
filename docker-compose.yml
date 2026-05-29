@@ -1,4 +1,4 @@
-name: ruleengine
+name: ruleengine-fullstack
 
 services:
   postgres:
@@ -21,7 +21,7 @@ services:
       retries: 5
       start_period: 10s
     networks:
-      - ruleengine
+      - ruleengine-network
 
   redis:
     image: redis:latest
@@ -39,13 +39,11 @@ services:
       retries: 5
       start_period: 5s
     networks:
-      - ruleengine
+      - ruleengine-network
 
-  app:
-    profiles:
-      - app
+  backend:
     build:
-      context: .
+      context: ./ruleengine
       dockerfile: Dockerfile
     image: ruleengine-backend:local
     container_name: ruleengine-app
@@ -61,19 +59,33 @@ services:
       SPRING_REDIS_PASSWORD: ""
       APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-http://localhost:3100,http://localhost:5173}
     ports:
-      - "${APP_PORT:-3600}:3600"
+      - "3600:3600"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     networks:
-      - ruleengine
+      - ruleengine-network
+
+  frontend:
+    build:
+      context: ./rule-engine-frontend
+      dockerfile: Dockerfile
+    image: ruleengine-frontend:local
+    container_name: ruleengine-frontend
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    depends_on:
+      - backend
+    networks:
+      - ruleengine-network
 
 volumes:
   postgres_data:
   redis_data:
 
 networks:
-  ruleengine:
+  ruleengine-network:
     driver: bridge

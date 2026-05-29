@@ -12,7 +12,7 @@ interface RuleToolbarProps {
   redo: () => void;
   canUndo: boolean;
   canRedo: boolean;
-  fileInputRef: RefObject<HTMLInputElement>;
+  fileInputRef: RefObject<HTMLInputElement | null>;
   handleImportChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleNewRule: () => void;
   handleExportClick: () => void;

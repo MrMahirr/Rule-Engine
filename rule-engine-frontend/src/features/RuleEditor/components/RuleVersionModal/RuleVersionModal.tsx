@@ -36,7 +36,7 @@ export function RuleVersionModal({ isOpen, onClose, ruleId }: RuleVersionModalPr
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Versiyon Geçmişi" maxWidth="md">
+    <Modal isOpen={isOpen} onClose={onClose} title="Versiyon Geçmişi" width="600px">
       <div className="flex flex-col gap-4 max-h-[60vh] overflow-y-auto pr-2">
         {isLoading && <div className="text-text-muted">Yükleniyor...</div>}
         

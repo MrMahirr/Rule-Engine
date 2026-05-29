@@ -1,5 +1,5 @@
 server:
-  port: ${SERVER_PORT:3500}
+  port: ${SERVER_PORT:3600}
 
 spring:
   application:
@@ -39,7 +39,7 @@ springdoc:
 
 app:
   cors:
-    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3100,http://localhost:5173}
     allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
     allowed-headers: "*"
     allow-credentials: true
