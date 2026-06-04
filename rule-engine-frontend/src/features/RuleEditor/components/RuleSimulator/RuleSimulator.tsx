@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { ASTNode, ASTActionNode } from '../../types/ast.types';
 import { evaluateAST } from '../../utils/ruleEvaluator';
 import { useConflictDetection } from '../../hooks/useConflictDetection';
-import { Play, FileSpreadsheet, UploadCloud } from 'lucide-react';
+import { Play, FileJson, UploadCloud } from 'lucide-react';
 import { Button } from '../../../../shared/components';
 import { useBatchEvaluateMutation, useEvaluateRuleMutation } from '../../services/useRuleQueries';
-import Papa from 'papaparse';
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
 
 interface RuleSimulatorProps {
@@ -27,7 +26,7 @@ export function RuleSimulator({ isOpen, onClose, ast, actions, ruleId }: RuleSim
   const [isEvaluating, setIsEvaluating] = useState(false);
 
   // Batch Test State
-  const [csvContent, setCsvContent] = useState<string>('age,status,amount\n25,active,1000\n18,inactive,500\n30,active,2000');
+  const [batchJsonContent, setBatchJsonContent] = useState<string>('[\n  {\n    "age": 25,\n    "status": "active",\n    "amount": 1000\n  },\n  {\n    "age": 18,\n    "status": "inactive",\n    "amount": 500\n  }\n]');
   const [batchResult, setBatchResult] = useState<any>(null);
   
   const conflicts = useConflictDetection(ast, actions);
@@ -75,35 +74,31 @@ export function RuleSimulator({ isOpen, onClose, ast, actions, ruleId }: RuleSim
       return;
     }
 
-    Papa.parse(csvContent, {
-      header: true,
-      dynamicTyping: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        if (results.errors.length > 0) {
-          setBatchResult({ error: 'CSV Parse Hatası: Lütfen formatı kontrol edin.' });
-          return;
-        }
-
-        const factsList = results.data as Record<string, any>[];
-        if (factsList.length === 0) {
-          setBatchResult({ error: 'CSV içerisinde geçerli veri bulunamadı.' });
-          return;
-        }
-
-        batchMutation.mutate(
-          { ruleId, factsList },
-          {
-            onSuccess: (res) => {
-              setBatchResult({ data: res.data });
-            },
-            onError: () => {
-              setBatchResult({ error: 'Toplu test sırasında sunucu hatası oluştu.' });
-            }
-          }
-        );
+    try {
+      const parsedData = JSON.parse(batchJsonContent);
+      if (!Array.isArray(parsedData)) {
+        setBatchResult({ error: 'JSON verisi bir dizi (array) formatında olmalıdır.' });
+        return;
       }
-    });
+      if (parsedData.length === 0) {
+        setBatchResult({ error: 'JSON içerisinde geçerli veri bulunamadı.' });
+        return;
+      }
+
+      batchMutation.mutate(
+        { ruleId, factsList: parsedData },
+        {
+          onSuccess: (res) => {
+            setBatchResult({ data: res.data });
+          },
+          onError: () => {
+            setBatchResult({ error: 'Toplu test sırasında sunucu hatası oluştu.' });
+          }
+        }
+      );
+    } catch (e) {
+      setBatchResult({ error: 'JSON Parse Hatası: Lütfen formatı kontrol edin.' });
+    }
   };
 
   if (!isOpen) return null;
@@ -127,7 +122,7 @@ export function RuleSimulator({ isOpen, onClose, ast, actions, ruleId }: RuleSim
           onClick={() => setActiveTab('batch')}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'batch' ? 'border-neon-blue text-neon-blue' : 'border-transparent text-text-secondary hover:text-text-primary'}`}
         >
-          <FileSpreadsheet size={14} /> Toplu Test (CSV)
+          <FileJson size={14} /> Toplu Test (JSON)
         </button>
       </div>
 
@@ -180,11 +175,11 @@ export function RuleSimulator({ isOpen, onClose, ast, actions, ruleId }: RuleSim
           </>
         ) : (
           <>
-            <p className="text-sm text-text-secondary m-0">Virgülle ayrılmış (CSV) test verilerini girin. İlk satır başlık (header) olmalıdır.</p>
+            <p className="text-sm text-text-secondary m-0">Dizi (Array) formatında JSON test verilerini girin.</p>
             <textarea 
               className="w-full h-[200px] bg-space-900 border border-border-subtle text-text-primary font-mono text-sm p-3 rounded-md resize-none outline-none focus:border-neon-blue focus:shadow-[0_0_10px_rgba(14,165,233,0.2)]"
-              value={csvContent}
-              onChange={e => setCsvContent(e.target.value)}
+              value={batchJsonContent}
+              onChange={e => setBatchJsonContent(e.target.value)}
               spellCheck={false}
             />
             <Button onClick={handleBatchTest} className="w-full" variant="primary" isLoading={batchMutation.isPending}>
